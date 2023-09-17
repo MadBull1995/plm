@@ -1,0 +1,123 @@
+{
+    "organization": {
+        "domain": "ppm"
+    },
+    "packages": {
+        "ppm/package/v1": {
+            "name": "package",
+            "package": "ppm.package.v1",
+            "messages": [
+                {
+                    "name": "Manifest",
+                    "fullName": "ppm.package.v1.Manifest",
+                    "description": "Manifest holds the metadata for a Protobuf package in the registry.",
+                    "fields": [
+                        {
+                            "name": "name",
+                            "fullName": "ppm.package.v1.Manifest.name",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        },
+                        {
+                            "name": "version",
+                            "fullName": "ppm.package.v1.Manifest.version",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 2
+                        },
+                        {
+                            "name": "description",
+                            "fullName": "ppm.package.v1.Manifest.description",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 3
+                        },
+                        {
+                            "name": "repository_url",
+                            "fullName": "ppm.package.v1.Manifest.repository_url",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 4
+                        },
+                        {
+                            "name": "license",
+                            "fullName": "ppm.package.v1.Manifest.license",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 5
+                        },
+                        {
+                            "name": "authors",
+                            "fullName": "ppm.package.v1.Manifest.authors",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_REPEATED",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 6
+                        },
+                        {
+                            "name": "dependencies",
+                            "fullName": "ppm.package.v1.Manifest.dependencies",
+                            "fieldType": "TYPE_MAP",
+                            "label": "LABEL_OPTIONAL",
+                            "keyType": "TYPE_STRING",
+                            "valueType": "TYPE_STRING",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 7
+                        },
+                        {
+                            "name": "metadata",
+                            "fullName": "ppm.package.v1.Manifest.metadata",
+                            "fieldType": "TYPE_MAP",
+                            "label": "LABEL_OPTIONAL",
+                            "keyType": "TYPE_STRING",
+                            "valueType": "TYPE_STRING",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 8
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message",
+                    "tag": "manifest"
+                }
+            ],
+            "dependencies": [
+                "ppm.package.v1.Manifest"
+            ]
+        }
+    },
+    "configs": {
+        "host": "localhost",
+        "port": 44880,
+        "protoBasePath": "protos",
+        "codeBasePath": "generated"
+    },
+    "sylkVersion": "0.4.1",
+    "project": {
+        "uri": "/Users/amitshmulevitch/protobuf-package-manager",
+        "name": "protobuf-package-manager",
+        "packageName": "protobufpackagemanager",
+        "clients": [
+            {
+                "language": "python",
+                "outDir": "/Users/amitshmulevitch/protobuf-package-manager/generated/client/python"
+            }
+        ],
+        "server": {
+            "language": "python"
+        }
+    }
+}

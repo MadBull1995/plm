@@ -1,0 +1,16 @@
+{
+    "server": {
+        "port": 50051,
+        "host": "localhost"
+    },
+    "storage": {
+        "s3": {
+            "bucketName": "some-bucket"
+        }
+    },
+    "data": {
+        "host": "localhost:5432",
+        "username": "some_admin",
+        "password": "some_secert"
+    }
+}

@@ -1,0 +1,397 @@
+{
+    "organization": {
+        "domain": "ppm"
+    },
+    "configs": {
+        "protoBasePath": "protos",
+        "host": "localhost",
+        "port": 44880,
+        "codeBasePath": "generated"
+    },
+    "sylkVersion": "0.4.1",
+    "project": {
+        "uri": "/Users/amitshmulevitch/protobuf-package-manager",
+        "name": "protobuf-package-manager",
+        "packageName": "protobufpackagemanager",
+        "clients": [
+            {
+                "language": "python",
+                "outDir": "/Users/amitshmulevitch/protobuf-package-manager/generated/client/python"
+            }
+        ],
+        "server": {
+            "language": "python"
+        }
+    },
+    "packages": {
+        "ppm/package/v1": {
+            "name": "package",
+            "package": "ppm.package.v1",
+            "messages": [
+                {
+                    "name": "LockedDependency",
+                    "fullName": "ppm.package.v1.LockedDependency",
+                    "description": "LockedDependency contains locked-down information about a dependency.",
+                    "fields": [
+                        {
+                            "name": "locked_version",
+                            "fullName": "ppm.package.v1.LockedDependency.locked_version",
+                            "description": "The locked version of the dependency.",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        },
+                        {
+                            "name": "source",
+                            "fullName": "ppm.package.v1.LockedDependency.source",
+                            "description": "The source from which this package version comes (e.g., URL or file path).",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 2
+                        },
+                        {
+                            "name": "checksum",
+                            "fullName": "ppm.package.v1.LockedDependency.checksum",
+                            "description": "Optional checksum for package integrity verification.",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 3
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message",
+                    "tag": "lock"
+                },
+                {
+                    "name": "LockFile",
+                    "fullName": "ppm.package.v1.LockFile",
+                    "description": "LockFile holds the locked-down versions of dependencies.",
+                    "fields": [
+                        {
+                            "name": "locked_dependencies",
+                            "fullName": "ppm.package.v1.LockFile.locked_dependencies",
+                            "description": "A map of package names to their locked versions and sources.",
+                            "fieldType": "TYPE_MAP",
+                            "label": "LABEL_OPTIONAL",
+                            "keyType": "TYPE_STRING",
+                            "valueType": "TYPE_MESSAGE",
+                            "messageType": "ppm.package.v1.LockedDependency",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        },
+                        {
+                            "name": "integrity_hash",
+                            "fullName": "ppm.package.v1.LockFile.integrity_hash",
+                            "description": "A hash or checksum for integrity verification, if applicable.",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 2
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message",
+                    "tag": "lock"
+                },
+                {
+                    "name": "Manifest",
+                    "fullName": "ppm.package.v1.Manifest",
+                    "description": "Manifest holds the metadata for a Protobuf package in the registry.",
+                    "fields": [
+                        {
+                            "name": "name",
+                            "fullName": "ppm.package.v1.Manifest.name",
+                            "description": "Name of the package.",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        },
+                        {
+                            "name": "version",
+                            "fullName": "ppm.package.v1.Manifest.version",
+                            "description": "Version of the package.",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 2
+                        },
+                        {
+                            "name": "description",
+                            "fullName": "ppm.package.v1.Manifest.description",
+                            "description": "A brief description of the package.",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 3
+                        },
+                        {
+                            "name": "src_dir",
+                            "fullName": "ppm.package.v1.Manifest.src_dir",
+                            "description": "Points to a directory within your project where the .proto files are stored",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 4
+                        },
+                        {
+                            "name": "repository_url",
+                            "fullName": "ppm.package.v1.Manifest.repository_url",
+                            "description": "The repository URL where the package source can be found.",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 5
+                        },
+                        {
+                            "name": "license",
+                            "fullName": "ppm.package.v1.Manifest.license",
+                            "description": "License under which the package is distributed.",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 6
+                        },
+                        {
+                            "name": "authors",
+                            "fullName": "ppm.package.v1.Manifest.authors",
+                            "description": "Names of the authors or maintainers.",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_REPEATED",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 7
+                        },
+                        {
+                            "name": "dependencies",
+                            "fullName": "ppm.package.v1.Manifest.dependencies",
+                            "description": "List of dependencies.",
+                            "fieldType": "TYPE_MAP",
+                            "label": "LABEL_OPTIONAL",
+                            "keyType": "TYPE_STRING",
+                            "valueType": "TYPE_STRING",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 8
+                        },
+                        {
+                            "name": "metadata",
+                            "fullName": "ppm.package.v1.Manifest.metadata",
+                            "description": "Custom metadata in key-value pairs.",
+                            "fieldType": "TYPE_MAP",
+                            "label": "LABEL_OPTIONAL",
+                            "keyType": "TYPE_STRING",
+                            "valueType": "TYPE_STRING",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 9
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message",
+                    "tag": "manifest"
+                }
+            ],
+            "dependencies": [
+                "ppm.package.v1.LockFile",
+                "ppm.package.v1.Manifest"
+            ]
+        },
+        "ppm/registry/v1": {
+            "name": "registry",
+            "package": "ppm.registry.v1",
+            "messages": [
+                {
+                    "name": "S3",
+                    "fullName": "ppm.registry.v1.S3",
+                    "fields": [
+                        {
+                            "name": "bucket_name",
+                            "fullName": "ppm.registry.v1.S3.bucket_name",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message",
+                    "tag": "storage"
+                },
+                {
+                    "name": "Local",
+                    "fullName": "ppm.registry.v1.Local",
+                    "fields": [
+                        {
+                            "name": "registry_path",
+                            "fullName": "ppm.registry.v1.Local.registry_path",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message",
+                    "tag": "storage"
+                },
+                {
+                    "name": "Storage",
+                    "fullName": "ppm.registry.v1.Storage",
+                    "fields": [
+                        {
+                            "name": "storage_backend",
+                            "fullName": "ppm.registry.v1.Storage.storage_backend",
+                            "fieldType": "TYPE_ONEOF",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1,
+                            "oneofFields": [
+                                {
+                                    "name": "local",
+                                    "fullName": "ppm.registry.v1.Storage.storage_backend.local",
+                                    "fieldType": "TYPE_MESSAGE",
+                                    "label": "LABEL_OPTIONAL",
+                                    "messageType": "ppm.registry.v1.Local",
+                                    "kind": "oneof",
+                                    "index": 1
+                                },
+                                {
+                                    "name": "s3",
+                                    "fullName": "ppm.registry.v1.Storage.storage_backend.s3",
+                                    "fieldType": "TYPE_MESSAGE",
+                                    "label": "LABEL_OPTIONAL",
+                                    "messageType": "ppm.registry.v1.S3",
+                                    "kind": "oneof",
+                                    "index": 2
+                                }
+                            ]
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message",
+                    "tag": "storage"
+                },
+                {
+                    "name": "Server",
+                    "fullName": "ppm.registry.v1.Server",
+                    "fields": [
+                        {
+                            "name": "port",
+                            "fullName": "ppm.registry.v1.Server.port",
+                            "fieldType": "TYPE_UINT32",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        },
+                        {
+                            "name": "host",
+                            "fullName": "ppm.registry.v1.Server.host",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 2
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message",
+                    "tag": "server"
+                },
+                {
+                    "name": "Data",
+                    "fullName": "ppm.registry.v1.Data",
+                    "fields": [
+                        {
+                            "name": "host",
+                            "fullName": "ppm.registry.v1.Data.host",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        },
+                        {
+                            "name": "username",
+                            "fullName": "ppm.registry.v1.Data.username",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 2
+                        },
+                        {
+                            "name": "password",
+                            "fullName": "ppm.registry.v1.Data.password",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 3
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message",
+                    "tag": "data"
+                },
+                {
+                    "name": "Config",
+                    "fullName": "ppm.registry.v1.Config",
+                    "fields": [
+                        {
+                            "name": "storage",
+                            "fullName": "ppm.registry.v1.Config.storage",
+                            "fieldType": "TYPE_MESSAGE",
+                            "label": "LABEL_OPTIONAL",
+                            "messageType": "ppm.registry.v1.Storage",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        },
+                        {
+                            "name": "server",
+                            "fullName": "ppm.registry.v1.Config.server",
+                            "fieldType": "TYPE_MESSAGE",
+                            "label": "LABEL_OPTIONAL",
+                            "messageType": "ppm.registry.v1.Server",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 2
+                        },
+                        {
+                            "name": "data",
+                            "fullName": "ppm.registry.v1.Config.data",
+                            "fieldType": "TYPE_MESSAGE",
+                            "label": "LABEL_OPTIONAL",
+                            "messageType": "ppm.registry.v1.Data",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 3
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message",
+                    "tag": "config"
+                }
+            ]
+        }
+    }
+}

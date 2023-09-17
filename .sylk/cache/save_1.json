@@ -1,0 +1,26 @@
+{
+    "organization": {
+        "domain": "ppm"
+    },
+    "configs": {
+        "host": "localhost",
+        "port": 44880,
+        "protoBasePath": "protos",
+        "codeBasePath": "generated"
+    },
+    "sylkVersion": "0.4.1",
+    "project": {
+        "uri": "/Users/amitshmulevitch/protobuf-package-manager",
+        "name": "protobuf-package-manager",
+        "packageName": "protobufpackagemanager",
+        "clients": [
+            {
+                "language": "python",
+                "outDir": "/Users/amitshmulevitch/protobuf-package-manager/generated/client/python"
+            }
+        ],
+        "server": {
+            "language": "python"
+        }
+    }
+}
