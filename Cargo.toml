@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "ppm-registry",
-    "ppm-cli",
-    "ppm-core"
+    "plm-registry",
+    "plm-cli",
+    "plm-core"
 ]

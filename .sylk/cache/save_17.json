@@ -1,41 +1,19 @@
 {
     "organization": {
-        "domain": "plm"
-    },
-    "configs": {
-        "protoBasePath": "protos",
-        "host": "localhost",
-        "port": 44880,
-        "codeBasePath": "generated"
-    },
-    "sylkVersion": "0.4.1",
-    "project": {
-        "uri": "/Users/amitshmulevitch/protobuf-package-manager",
-        "name": "protobuf-package-manager",
-        "packageName": "protobufpackagemanager",
-        "clients": [
-            {
-                "language": "python",
-                "outDir": "/Users/amitshmulevitch/protobuf-package-manager/generated/client/python"
-            }
-        ],
-        "server": {
-            "language": "python"
-        }
+        "domain": "ppm"
     },
     "packages": {
-        "plm/registry/v1": {
+        "ppm/registry/v1": {
             "name": "registry",
-            "package": "plm.registry.v1",
+            "package": "ppm.registry.v1",
             "messages": [
                 {
                     "name": "S3",
-                    "fullName": "plm.registry.v1.S3",
+                    "fullName": "ppm.registry.v1.S3",
                     "fields": [
                         {
                             "name": "bucket_name",
-                            "fullName": "plm.registry.v1.S3.bucket_name",
-                            "description": "The `Simple Storage Service` (s3) bucket name",
+                            "fullName": "ppm.registry.v1.S3.bucket_name",
                             "fieldType": "TYPE_STRING",
                             "label": "LABEL_OPTIONAL",
                             "type": "descriptor",
@@ -49,12 +27,11 @@
                 },
                 {
                     "name": "Local",
-                    "fullName": "plm.registry.v1.Local",
+                    "fullName": "ppm.registry.v1.Local",
                     "fields": [
                         {
                             "name": "registry_path",
-                            "fullName": "plm.registry.v1.Local.registry_path",
-                            "description": "The full path to the local directory to store libraries in",
+                            "fullName": "ppm.registry.v1.Local.registry_path",
                             "fieldType": "TYPE_STRING",
                             "label": "LABEL_OPTIONAL",
                             "type": "descriptor",
@@ -68,32 +45,32 @@
                 },
                 {
                     "name": "Storage",
-                    "fullName": "plm.registry.v1.Storage",
+                    "fullName": "ppm.registry.v1.Storage",
                     "fields": [
                         {
                             "name": "storage_backend",
-                            "fullName": "plm.registry.v1.Storage.storage_backend",
+                            "fullName": "ppm.registry.v1.Storage.storage_backend",
                             "fieldType": "TYPE_ONEOF",
                             "label": "LABEL_OPTIONAL",
                             "type": "descriptor",
                             "kind": "field",
-                            "index": 2,
+                            "index": 1,
                             "oneofFields": [
                                 {
                                     "name": "local",
-                                    "fullName": "plm.registry.v1.Storage.storage_backend.local",
+                                    "fullName": "ppm.registry.v1.Storage.storage_backend.local",
                                     "fieldType": "TYPE_MESSAGE",
                                     "label": "LABEL_OPTIONAL",
-                                    "messageType": "plm.registry.v1.Local",
+                                    "messageType": "ppm.registry.v1.Local",
                                     "index": 1,
                                     "kind": "oneof"
                                 },
                                 {
                                     "name": "s3",
-                                    "fullName": "plm.registry.v1.Storage.storage_backend.s3",
+                                    "fullName": "ppm.registry.v1.Storage.storage_backend.s3",
                                     "fieldType": "TYPE_MESSAGE",
                                     "label": "LABEL_OPTIONAL",
-                                    "messageType": "plm.registry.v1.S3",
+                                    "messageType": "ppm.registry.v1.S3",
                                     "index": 2,
                                     "kind": "oneof"
                                 }
@@ -106,11 +83,11 @@
                 },
                 {
                     "name": "Server",
-                    "fullName": "plm.registry.v1.Server",
+                    "fullName": "ppm.registry.v1.Server",
                     "fields": [
                         {
                             "name": "port",
-                            "fullName": "plm.registry.v1.Server.port",
+                            "fullName": "ppm.registry.v1.Server.port",
                             "fieldType": "TYPE_UINT32",
                             "label": "LABEL_OPTIONAL",
                             "type": "descriptor",
@@ -119,7 +96,7 @@
                         },
                         {
                             "name": "host",
-                            "fullName": "plm.registry.v1.Server.host",
+                            "fullName": "ppm.registry.v1.Server.host",
                             "fieldType": "TYPE_STRING",
                             "label": "LABEL_OPTIONAL",
                             "type": "descriptor",
@@ -133,11 +110,11 @@
                 },
                 {
                     "name": "Data",
-                    "fullName": "plm.registry.v1.Data",
+                    "fullName": "ppm.registry.v1.Data",
                     "fields": [
                         {
                             "name": "host",
-                            "fullName": "plm.registry.v1.Data.host",
+                            "fullName": "ppm.registry.v1.Data.host",
                             "fieldType": "TYPE_STRING",
                             "label": "LABEL_OPTIONAL",
                             "type": "descriptor",
@@ -146,7 +123,7 @@
                         },
                         {
                             "name": "username",
-                            "fullName": "plm.registry.v1.Data.username",
+                            "fullName": "ppm.registry.v1.Data.username",
                             "fieldType": "TYPE_STRING",
                             "label": "LABEL_OPTIONAL",
                             "type": "descriptor",
@@ -155,7 +132,7 @@
                         },
                         {
                             "name": "password",
-                            "fullName": "plm.registry.v1.Data.password",
+                            "fullName": "ppm.registry.v1.Data.password",
                             "fieldType": "TYPE_STRING",
                             "label": "LABEL_OPTIONAL",
                             "type": "descriptor",
@@ -169,34 +146,34 @@
                 },
                 {
                     "name": "Config",
-                    "fullName": "plm.registry.v1.Config",
+                    "fullName": "ppm.registry.v1.Config",
                     "fields": [
                         {
                             "name": "storage",
-                            "fullName": "plm.registry.v1.Config.storage",
+                            "fullName": "ppm.registry.v1.Config.storage",
                             "fieldType": "TYPE_MESSAGE",
                             "label": "LABEL_OPTIONAL",
-                            "messageType": "plm.registry.v1.Storage",
+                            "messageType": "ppm.registry.v1.Storage",
                             "type": "descriptor",
                             "kind": "field",
                             "index": 1
                         },
                         {
                             "name": "server",
-                            "fullName": "plm.registry.v1.Config.server",
+                            "fullName": "ppm.registry.v1.Config.server",
                             "fieldType": "TYPE_MESSAGE",
                             "label": "LABEL_OPTIONAL",
-                            "messageType": "plm.registry.v1.Server",
+                            "messageType": "ppm.registry.v1.Server",
                             "type": "descriptor",
                             "kind": "field",
                             "index": 2
                         },
                         {
                             "name": "data",
-                            "fullName": "plm.registry.v1.Config.data",
+                            "fullName": "ppm.registry.v1.Config.data",
                             "fieldType": "TYPE_MESSAGE",
                             "label": "LABEL_OPTIONAL",
-                            "messageType": "plm.registry.v1.Data",
+                            "messageType": "ppm.registry.v1.Data",
                             "type": "descriptor",
                             "kind": "field",
                             "index": 3
@@ -208,11 +185,11 @@
                 },
                 {
                     "name": "PartialDownloadRequest",
-                    "fullName": "plm.registry.v1.PartialDownloadRequest",
+                    "fullName": "ppm.registry.v1.PartialDownloadRequest",
                     "fields": [
                         {
                             "name": "name",
-                            "fullName": "plm.registry.v1.PartialDownloadRequest.name",
+                            "fullName": "ppm.registry.v1.PartialDownloadRequest.name",
                             "description": "The library full name e.g: 'some_package' / '@org/some_package'",
                             "fieldType": "TYPE_STRING",
                             "label": "LABEL_OPTIONAL",
@@ -222,7 +199,7 @@
                         },
                         {
                             "name": "packages",
-                            "fullName": "plm.registry.v1.PartialDownloadRequest.packages",
+                            "fullName": "ppm.registry.v1.PartialDownloadRequest.packages",
                             "description": "A list of full 'library/package' names",
                             "fieldType": "TYPE_STRING",
                             "label": "LABEL_REPEATED",
@@ -236,21 +213,11 @@
                 },
                 {
                     "name": "DownloadRequest",
-                    "fullName": "plm.registry.v1.DownloadRequest",
+                    "fullName": "ppm.registry.v1.DownloadRequest",
                     "fields": [
                         {
-                            "name": "compression",
-                            "fullName": "plm.registry.v1.DownloadRequest.compression",
-                            "fieldType": "TYPE_ENUM",
-                            "label": "LABEL_OPTIONAL",
-                            "enumType": "plm.registry.v1.Compressions",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 3
-                        },
-                        {
                             "name": "full_or_partial",
-                            "fullName": "plm.registry.v1.DownloadRequest.full_or_partial",
+                            "fullName": "ppm.registry.v1.DownloadRequest.full_or_partial",
                             "fieldType": "TYPE_ONEOF",
                             "label": "LABEL_OPTIONAL",
                             "type": "descriptor",
@@ -259,7 +226,7 @@
                             "oneofFields": [
                                 {
                                     "name": "full",
-                                    "fullName": "plm.registry.v1.DownloadRequest.full_or_partial.full",
+                                    "fullName": "ppm.registry.v1.DownloadRequest.full_or_partial.full",
                                     "fieldType": "TYPE_STRING",
                                     "label": "LABEL_OPTIONAL",
                                     "index": 1,
@@ -267,10 +234,10 @@
                                 },
                                 {
                                     "name": "partial",
-                                    "fullName": "plm.registry.v1.DownloadRequest.full_or_partial.partial",
+                                    "fullName": "ppm.registry.v1.DownloadRequest.full_or_partial.partial",
                                     "fieldType": "TYPE_MESSAGE",
                                     "label": "LABEL_OPTIONAL",
-                                    "messageType": "plm.registry.v1.PartialDownloadRequest",
+                                    "messageType": "ppm.registry.v1.PartialDownloadRequest",
                                     "index": 2,
                                     "kind": "oneof"
                                 }
@@ -282,105 +249,109 @@
                 },
                 {
                     "name": "DownloadResponse",
-                    "fullName": "plm.registry.v1.DownloadResponse",
+                    "fullName": "ppm.registry.v1.DownloadResponse",
                     "fields": [
                         {
-                            "name": "protobuf_or_gz",
-                            "fullName": "plm.registry.v1.DownloadResponse.protobuf_or_gz",
-                            "fieldType": "TYPE_ONEOF",
+                            "name": "library",
+                            "fullName": "ppm.registry.v1.DownloadResponse.library",
+                            "fieldType": "TYPE_MESSAGE",
                             "label": "LABEL_OPTIONAL",
+                            "messageType": "ppm.library.v1.Library",
                             "type": "descriptor",
                             "kind": "field",
-                            "index": 2,
-                            "oneofFields": [
-                                {
-                                    "name": "protobuf",
-                                    "fullName": "plm.registry.v1.DownloadResponse.protobuf_or_gz.protobuf",
-                                    "fieldType": "TYPE_MESSAGE",
-                                    "label": "LABEL_OPTIONAL",
-                                    "messageType": "plm.library.v1.Library",
-                                    "index": 1,
-                                    "kind": "oneof"
-                                },
-                                {
-                                    "name": "gz",
-                                    "fullName": "plm.registry.v1.DownloadResponse.protobuf_or_gz.gz",
-                                    "fieldType": "TYPE_BYTES",
-                                    "label": "LABEL_OPTIONAL",
-                                    "index": 2,
-                                    "kind": "oneof"
-                                }
-                            ]
+                            "index": 1
                         }
                     ],
                     "type": "descriptor",
                     "kind": "message"
                 }
             ],
-            "enums": [
-                {
-                    "name": "Compressions",
-                    "fullName": "plm.registry.v1.Compressions",
-                    "values": [
-                        {
-                            "name": "PROTOBUF",
-                            "fullName": "plm.registry.v1.Compressions.PROTOBUF",
-                            "type": "descriptor",
-                            "kind": "enum_value"
-                        },
-                        {
-                            "name": "GZ",
-                            "fullName": "plm.registry.v1.Compressions.GZ",
-                            "index": 1,
-                            "number": 1,
-                            "type": "descriptor",
-                            "kind": "enum_value"
-                        }
-                    ],
-                    "type": "descriptor",
-                    "kind": "enum"
-                }
-            ],
             "type": "package",
+            "dependencies": [
+                "ppm.library.v1"
+            ],
             "extensions": {
                 "files": {
-                    "registry": {},
-                    "storage": {}
+                    "registry": {}
                 }
             },
             "services": [
                 {
                     "name": "RegistryService",
-                    "fullName": "plm.registry.v1.RegistryService",
-                    "methods": [
-                        {
-                            "name": "Download",
-                            "fullName": "plm.registry.v1.RegistryService.Download",
-                            "inputType": "plm.registry.v1.DownloadRequest",
-                            "outputType": "plm.registry.v1.DownloadResponse",
-                            "type": "descriptor",
-                            "kind": "method"
-                        }
-                    ],
+                    "fullName": "ppm.registry.v1.RegistryService",
                     "type": "service"
                 }
-            ],
-            "dependencies": [
-                "plm.library.v1"
             ]
         },
-        "plm/package/v1": {
+        "ppm/library/v1": {
+            "name": "library",
+            "package": "ppm.library.v1",
+            "messages": [
+                {
+                    "name": "Library",
+                    "fullName": "ppm.library.v1.Library",
+                    "fields": [
+                        {
+                            "name": "name",
+                            "fullName": "ppm.library.v1.Library.name",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        },
+                        {
+                            "name": "version",
+                            "fullName": "ppm.library.v1.Library.version",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 2
+                        },
+                        {
+                            "name": "packages",
+                            "fullName": "ppm.library.v1.Library.packages",
+                            "fieldType": "TYPE_MESSAGE",
+                            "label": "LABEL_REPEATED",
+                            "messageType": "ppm.package.v1.Package",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 3
+                        },
+                        {
+                            "name": "metadata",
+                            "fullName": "ppm.library.v1.Library.metadata",
+                            "fieldType": "TYPE_MAP",
+                            "label": "LABEL_OPTIONAL",
+                            "keyType": "TYPE_STRING",
+                            "valueType": "TYPE_STRING",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 4
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message"
+                }
+            ],
+            "type": "package",
+            "dependencies": [
+                "ppm.package.v1"
+            ]
+        },
+        "ppm/package/v1": {
             "name": "package",
-            "package": "plm.package.v1",
+            "package": "ppm.package.v1",
             "messages": [
                 {
                     "name": "LockedDependency",
-                    "fullName": "plm.package.v1.LockedDependency",
+                    "fullName": "ppm.package.v1.LockedDependency",
                     "description": "LockedDependency contains locked-down information about a dependency.",
                     "fields": [
                         {
                             "name": "locked_version",
-                            "fullName": "plm.package.v1.LockedDependency.locked_version",
+                            "fullName": "ppm.package.v1.LockedDependency.locked_version",
                             "description": "The locked version of the dependency.",
                             "fieldType": "TYPE_STRING",
                             "label": "LABEL_OPTIONAL",
@@ -390,7 +361,7 @@
                         },
                         {
                             "name": "source",
-                            "fullName": "plm.package.v1.LockedDependency.source",
+                            "fullName": "ppm.package.v1.LockedDependency.source",
                             "description": "The source from which this package version comes (e.g., URL or file path).",
                             "fieldType": "TYPE_STRING",
                             "label": "LABEL_OPTIONAL",
@@ -400,7 +371,7 @@
                         },
                         {
                             "name": "checksum",
-                            "fullName": "plm.package.v1.LockedDependency.checksum",
+                            "fullName": "ppm.package.v1.LockedDependency.checksum",
                             "description": "Optional checksum for package integrity verification.",
                             "fieldType": "TYPE_STRING",
                             "label": "LABEL_OPTIONAL",
@@ -415,25 +386,25 @@
                 },
                 {
                     "name": "LockFile",
-                    "fullName": "plm.package.v1.LockFile",
+                    "fullName": "ppm.package.v1.LockFile",
                     "description": "LockFile holds the locked-down versions of dependencies.",
                     "fields": [
                         {
                             "name": "locked_dependencies",
-                            "fullName": "plm.package.v1.LockFile.locked_dependencies",
+                            "fullName": "ppm.package.v1.LockFile.locked_dependencies",
                             "description": "A map of package names to their locked versions and sources.",
                             "fieldType": "TYPE_MAP",
                             "label": "LABEL_OPTIONAL",
                             "keyType": "TYPE_STRING",
                             "valueType": "TYPE_MESSAGE",
-                            "messageType": "plm.package.v1.LockedDependency",
+                            "messageType": "ppm.package.v1.LockedDependency",
                             "type": "descriptor",
                             "kind": "field",
                             "index": 1
                         },
                         {
                             "name": "integrity_hash",
-                            "fullName": "plm.package.v1.LockFile.integrity_hash",
+                            "fullName": "ppm.package.v1.LockFile.integrity_hash",
                             "description": "A hash or checksum for integrity verification, if applicable.",
                             "fieldType": "TYPE_STRING",
                             "label": "LABEL_OPTIONAL",
@@ -448,12 +419,12 @@
                 },
                 {
                     "name": "Manifest",
-                    "fullName": "plm.package.v1.Manifest",
+                    "fullName": "ppm.package.v1.Manifest",
                     "description": "Manifest holds the metadata for a Protobuf package in the registry.",
                     "fields": [
                         {
                             "name": "name",
-                            "fullName": "plm.package.v1.Manifest.name",
+                            "fullName": "ppm.package.v1.Manifest.name",
                             "description": "Name of the package.",
                             "fieldType": "TYPE_STRING",
                             "label": "LABEL_OPTIONAL",
@@ -463,7 +434,7 @@
                         },
                         {
                             "name": "version",
-                            "fullName": "plm.package.v1.Manifest.version",
+                            "fullName": "ppm.package.v1.Manifest.version",
                             "description": "Version of the package.",
                             "fieldType": "TYPE_STRING",
                             "label": "LABEL_OPTIONAL",
@@ -473,7 +444,7 @@
                         },
                         {
                             "name": "description",
-                            "fullName": "plm.package.v1.Manifest.description",
+                            "fullName": "ppm.package.v1.Manifest.description",
                             "description": "A brief description of the package.",
                             "fieldType": "TYPE_STRING",
                             "label": "LABEL_OPTIONAL",
@@ -483,7 +454,7 @@
                         },
                         {
                             "name": "src_dir",
-                            "fullName": "plm.package.v1.Manifest.src_dir",
+                            "fullName": "ppm.package.v1.Manifest.src_dir",
                             "description": "Points to a directory within your project where the .proto files are stored",
                             "fieldType": "TYPE_STRING",
                             "label": "LABEL_OPTIONAL",
@@ -493,7 +464,7 @@
                         },
                         {
                             "name": "repository_url",
-                            "fullName": "plm.package.v1.Manifest.repository_url",
+                            "fullName": "ppm.package.v1.Manifest.repository_url",
                             "description": "The repository URL where the package source can be found.",
                             "fieldType": "TYPE_STRING",
                             "label": "LABEL_OPTIONAL",
@@ -503,7 +474,7 @@
                         },
                         {
                             "name": "license",
-                            "fullName": "plm.package.v1.Manifest.license",
+                            "fullName": "ppm.package.v1.Manifest.license",
                             "description": "License under which the package is distributed.",
                             "fieldType": "TYPE_STRING",
                             "label": "LABEL_OPTIONAL",
@@ -513,7 +484,7 @@
                         },
                         {
                             "name": "authors",
-                            "fullName": "plm.package.v1.Manifest.authors",
+                            "fullName": "ppm.package.v1.Manifest.authors",
                             "description": "Names of the authors or maintainers.",
                             "fieldType": "TYPE_STRING",
                             "label": "LABEL_REPEATED",
@@ -523,7 +494,7 @@
                         },
                         {
                             "name": "dependencies",
-                            "fullName": "plm.package.v1.Manifest.dependencies",
+                            "fullName": "ppm.package.v1.Manifest.dependencies",
                             "description": "List of dependencies.",
                             "fieldType": "TYPE_MAP",
                             "label": "LABEL_OPTIONAL",
@@ -535,7 +506,7 @@
                         },
                         {
                             "name": "metadata",
-                            "fullName": "plm.package.v1.Manifest.metadata",
+                            "fullName": "ppm.package.v1.Manifest.metadata",
                             "description": "Custom metadata in key-value pairs.",
                             "fieldType": "TYPE_MAP",
                             "label": "LABEL_OPTIONAL",
@@ -552,11 +523,11 @@
                 },
                 {
                     "name": "Package",
-                    "fullName": "plm.package.v1.Package",
+                    "fullName": "ppm.package.v1.Package",
                     "fields": [
                         {
                             "name": "name",
-                            "fullName": "plm.package.v1.Package.name",
+                            "fullName": "ppm.package.v1.Package.name",
                             "fieldType": "TYPE_STRING",
                             "label": "LABEL_OPTIONAL",
                             "type": "descriptor",
@@ -565,7 +536,7 @@
                         },
                         {
                             "name": "version",
-                            "fullName": "plm.package.v1.Package.version",
+                            "fullName": "ppm.package.v1.Package.version",
                             "fieldType": "TYPE_STRING",
                             "label": "LABEL_OPTIONAL",
                             "type": "descriptor",
@@ -574,17 +545,16 @@
                         },
                         {
                             "name": "files",
-                            "fullName": "plm.package.v1.Package.files",
-                            "fieldType": "TYPE_MESSAGE",
+                            "fullName": "ppm.package.v1.Package.files",
+                            "fieldType": "TYPE_STRING",
                             "label": "LABEL_REPEATED",
-                            "messageType": "plm.package.v1.File",
                             "type": "descriptor",
                             "kind": "field",
                             "index": 3
                         },
                         {
                             "name": "metadata",
-                            "fullName": "plm.package.v1.Package.metadata",
+                            "fullName": "ppm.package.v1.Package.metadata",
                             "fieldType": "TYPE_MAP",
                             "label": "LABEL_OPTIONAL",
                             "keyType": "TYPE_STRING",
@@ -599,11 +569,11 @@
                 },
                 {
                     "name": "File",
-                    "fullName": "plm.package.v1.File",
+                    "fullName": "ppm.package.v1.File",
                     "fields": [
                         {
                             "name": "name",
-                            "fullName": "plm.package.v1.File.name",
+                            "fullName": "ppm.package.v1.File.name",
                             "fieldType": "TYPE_STRING",
                             "label": "LABEL_OPTIONAL",
                             "type": "descriptor",
@@ -612,7 +582,7 @@
                         },
                         {
                             "name": "content",
-                            "fullName": "plm.package.v1.File.content",
+                            "fullName": "ppm.package.v1.File.content",
                             "fieldType": "TYPE_BYTES",
                             "label": "LABEL_OPTIONAL",
                             "type": "descriptor",
@@ -624,83 +594,28 @@
                     "kind": "message"
                 }
             ],
-            "type": "package",
-            "extensions": {
-                "files": {
-                    "package": {}
-                }
+            "type": "package"
+        }
+    },
+    "configs": {
+        "host": "localhost",
+        "port": 44880,
+        "protoBasePath": "protos",
+        "codeBasePath": "generated"
+    },
+    "sylkVersion": "0.4.1",
+    "project": {
+        "uri": "/Users/amitshmulevitch/protobuf-package-manager",
+        "name": "protobuf-package-manager",
+        "packageName": "protobufpackagemanager",
+        "clients": [
+            {
+                "language": "python",
+                "outDir": "/Users/amitshmulevitch/protobuf-package-manager/generated/client/python"
             }
-        },
-        "plm/library/v1": {
-            "name": "library",
-            "package": "plm.library.v1",
-            "messages": [
-                {
-                    "name": "Library",
-                    "fullName": "plm.library.v1.Library",
-                    "fields": [
-                        {
-                            "name": "name",
-                            "fullName": "plm.library.v1.Library.name",
-                            "fieldType": "TYPE_STRING",
-                            "label": "LABEL_OPTIONAL",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 1
-                        },
-                        {
-                            "name": "version",
-                            "fullName": "plm.library.v1.Library.version",
-                            "fieldType": "TYPE_STRING",
-                            "label": "LABEL_OPTIONAL",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 2
-                        },
-                        {
-                            "name": "packages",
-                            "fullName": "plm.library.v1.Library.packages",
-                            "fieldType": "TYPE_MESSAGE",
-                            "label": "LABEL_REPEATED",
-                            "messageType": "plm.package.v1.Package",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 3
-                        },
-                        {
-                            "name": "metadata",
-                            "fullName": "plm.library.v1.Library.metadata",
-                            "fieldType": "TYPE_MAP",
-                            "label": "LABEL_OPTIONAL",
-                            "keyType": "TYPE_STRING",
-                            "valueType": "TYPE_STRING",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 4
-                        },
-                        {
-                            "name": "fd_set",
-                            "fullName": "plm.library.v1.Library.fd_set",
-                            "fieldType": "TYPE_BYTES",
-                            "label": "LABEL_OPTIONAL",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 5
-                        }
-                    ],
-                    "type": "descriptor",
-                    "kind": "message"
-                }
-            ],
-            "type": "package",
-            "dependencies": [
-                "plm.package.v1"
-            ],
-            "extensions": {
-                "files": {
-                    "library": {}
-                }
-            }
+        ],
+        "server": {
+            "language": "python"
         }
     }
 }

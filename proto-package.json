@@ -1,9 +1,9 @@
 {
-  "name": "test",
+  "name": "test_package",
   "version": "0.0.1",
   "srcDir": "protos",
   "description": "Awesome Protobuf Package",
-  "license": "MIT",
+  "license": "GPL-3.0",
   "authors": [],
   "repositoryUrl": "",
   "metadata": {},

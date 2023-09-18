@@ -1,6 +1,6 @@
 {
     "server": {
-        "port": 50051,
+        "port": 7676,
         "host": "localhost"
     },
     "storage": {
