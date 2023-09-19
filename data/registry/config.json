@@ -5,7 +5,7 @@
     },
     "storage": {
         "local": {
-            "registryPath": "/plm-registry/data"
+            "registryPath": "/registry/plm-registry/libs"
         }
     },
     "data": {

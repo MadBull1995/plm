@@ -13,7 +13,7 @@ services:
     ports:
       - "7575:7575"
     volumes:
-      - ./data/registry:/plm-registry/data
+      - ./data/registry:/registry/plm-registry/libs
       - ./data/registry/config.json:/registry/config.json
 
   
