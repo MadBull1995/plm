@@ -24,9 +24,9 @@ main() {
     cross rustc --bin plm --target $TARGET --release -- -C lto
 
     # TODO Update this to package the right artifacts
-    cp target/$TARGET/release/plm $stage/
+    cp target/$TARGET/release/plm ../$stage/
 
-    cd $stage
+    cd ../$stage
     tar czf $src/$CRATE_NAME-$TRAVIS_TAG-$TARGET.tar.gz *
     cd $src
 
