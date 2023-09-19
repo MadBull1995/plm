@@ -10,8 +10,10 @@ Set-Location $STAGE
 
 $ZIP = "$SRC_DIR\$($env:CRATE_NAME)-$($env:APPVEYOR_REPO_TAG_NAME)-$($env:TARGET).zip"
 
-# TODO Update this to package the right artifacts
-Copy-Item "$SRC_DIR\target\$($env:TARGET)\release\$(env:CRATE_NAME).exe" '.\'
+# Navigate to the CLI directory within the workspace
+$CLI_DIR = "$SRC_DIR\plm-cli"
+
+Copy-Item "$CLI_DIR\target\$($env:TARGET)\release\plm.exe" '.\'
 
 7z a "$ZIP" *
 
