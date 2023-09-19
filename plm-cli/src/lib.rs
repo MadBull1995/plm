@@ -17,7 +17,7 @@ pub mod utils {
     use std::time::Instant;
 
     use crate::utils::prompter::Prompter;
-
+    pub mod lock;
     pub mod configs;
     pub mod errors;
     pub mod helpers;

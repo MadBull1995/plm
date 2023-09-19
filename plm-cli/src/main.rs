@@ -10,7 +10,7 @@ use plm_cli::{
         self,
         configs::CliConfigs,
         errors::{PlmResult, PlmError},
-        prompter::Prompter,
+        prompter::Prompter, lock::ProtoLock,
     },
     Cli, Commands,
 };
@@ -138,6 +138,9 @@ async fn process_commands(
 
         // <-------- Init-------------->
         Commands::Init(init) => {
+            let proto_lock = ProtoLock::default();
+            proto_lock.to_file(FileSystem::join_paths(cfgs.current_dir, "proto-lock.json"))?;
+
             commands::init::init_command(&false).await?;
             handle_shutdown(shutdown_send.clone()).await?;
         }
