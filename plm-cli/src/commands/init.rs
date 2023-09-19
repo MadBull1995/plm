@@ -10,6 +10,7 @@ use plm_core::FileSystem;
 pub async fn init_command(verbose: &bool) -> PlmResult<()> {
     let mut manifest = plm_core::Manifest::default();
 
+
     let project_name: String = Input::with_theme(&plm_theme())
         .with_prompt("Enter your project name")
         .interact()
@@ -45,13 +46,21 @@ pub async fn init_command(verbose: &bool) -> PlmResult<()> {
     FileSystem::write_json(path.to_str().unwrap(), &manifest)
         .map_err(|err| panic!("error writing file"))?;
 
+    Prompter::verbose("creating /.plm");
+    let dot_plm_dir = FileSystem::join_paths(lib_dir.clone(), ".plm");
     FileSystem::create_dir(
-        FileSystem::join_paths(lib_dir.clone(), ".plm")
+            dot_plm_dir.clone()
             .to_str()
             .unwrap(),
     )
     .map_err(|err| PlmError::InternalError("Failed to create directory".to_string()))?;
-
+    Prompter::verbose("creating /.plm/builds");
+    FileSystem::create_dir(
+        FileSystem::join_paths(dot_plm_dir.clone(), "builds")
+            .to_str()
+            .unwrap(),
+    )
+    .map_err(|err| PlmError::InternalError("Failed to create directory".to_string()))?;
     if *verbose {
         dbg!(manifest);
     }

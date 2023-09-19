@@ -1,4 +1,4 @@
-use std::{path::PathBuf, collections::HashMap};
+use std::{path::PathBuf, collections::HashMap, env};
 
 use plm_core::FileSystem;
 
@@ -26,6 +26,16 @@ impl CliConfigs {
         }
     }
 
+    pub fn write_plmrc_file(&self) -> PlmResult<()> {
+        let content = format!("registry={}\nusername={}\npassword={}",
+            self.registry,
+            self.username.clone().unwrap_or_else(|| "".to_string()),
+            self.password.clone().unwrap_or_else(|| "".to_string())
+        );
+        FileSystem::write_file(FileSystem::join_paths(FileSystem::get_home_directory().unwrap(), ".plmrc").to_str().unwrap(), &content)
+            .map_err(|err| PlmError::FileSystemError(err))
+    }
+
     pub fn load_plmrc_files(&mut self) -> PlmResult<()> {
         let mut overrides: Option<HashMap<String,String>> = None;
         
@@ -33,7 +43,8 @@ impl CliConfigs {
 
         match global {
             Err(err) => {
-                Prompter::warning("failed to load global configs $HOME/.plmrc");
+                Prompter::warning("failed to load global configs $HOME/.plmrc, creating one.");
+                self.write_plmrc_file()?;
                 overrides = Some(HashMap::new());
             }
             Ok(g) => {

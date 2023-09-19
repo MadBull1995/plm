@@ -4,29 +4,31 @@ use std::path::Path;
 
 use super::errors::{PlmError, PlmResult};
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Dependency {
     pub name: String,
     pub version: String,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Library {
     pub name: String,
     pub version: String,
     pub dependencies: Vec<Dependency>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Debug, Serialize, Deserialize, Default)]
 pub struct ProtoLock {
     pub libraries: Vec<Library>,
 }
 
 impl ProtoLock {
     // Read from lock file
-    pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Self, Box<dyn std::error::Error>> {
-        let file_content = fs::read_file(path.as_ref().to_str().unwrap())?;
-        let proto_lock: ProtoLock = serde_json::from_str(&file_content)?;
+    pub fn from_file<P: AsRef<Path>>(path: P) -> PlmResult<Self> {
+        let file_content = fs::read_file(path.as_ref().to_str().unwrap())
+            .map_err(|err| PlmError::FileSystemError(err))?;
+        let proto_lock: ProtoLock = serde_json::from_str(&file_content)
+            .map_err(|err| PlmError::SerializationError(err.into()))?;
         Ok(proto_lock)
     }
 
@@ -65,14 +67,14 @@ impl ProtoLock {
     }
 
     // Resolve a library's dependencies recursively
-    pub fn resolve_dependencies(&self, lib_name: &str) -> Result<Vec<Dependency>, String> {
+    pub fn resolve_dependencies(&self, lib_name: &str) -> PlmResult<Vec<Dependency>> {
         // Implement your logic here to resolve dependencies. You may use your DAG algorithm.
         // If the dependency can't be resolved, return an Error.
         Ok(Vec::new()) // Placeholder
     }
 
     // Validate the entire lock file, e.g., for cyclic dependencies
-    pub fn validate(&self) -> Result<(), String> {
+    pub fn validate(&self) -> PlmResult<()> {
         // Implement your DAG-based validation logic here
         Ok(()) // Placeholder
     }

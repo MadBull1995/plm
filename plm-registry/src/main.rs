@@ -8,15 +8,14 @@ use plm_registry::{
     data,
     types::RegistryResult,
     utils::{auth, error, tracing},
-    DataBuilder, ServerBuilder, StorageBuilder,
+    DataBuilder, StorageBuilder, RegistryServerBuilder, RegistryServer,
 };
 
 #[tokio::main]
 async fn main() -> RegistryResult<()> {
     // Starting Protobuf Package Manager registry
     let mut configs = ConfigBuilder::new();
-    let cfg = setup_configs(&mut configs)?;
-    dbg!(cfg);
+    let config = setup_configs(&mut configs)?;
 
     let mut storage = StorageBuilder::new();
     setup_storage(&mut storage)?;
@@ -26,11 +25,13 @@ async fn main() -> RegistryResult<()> {
     setup_db(&mut db)?;
     dbg!(db);
 
-    let mut server = ServerBuilder::new();
-    setup_server(&mut server)?;
-    dbg!(server);
+    let mut server_builder = RegistryServerBuilder::new();
+    let tmp_server_cfg = config.server.unwrap();
+    let addr = format!("{}:{}", tmp_server_cfg.host, tmp_server_cfg.port);
+    let server = setup_server(&mut server_builder.clone(), addr)?;
+    dbg!(server.clone());
 
-    // server.serve().await?;
+    server.run().await;
 
     Ok(())
 }
@@ -65,6 +66,8 @@ fn setup_db(db_builder: &mut DataBuilder) -> RegistryResult<()> {
     Ok(())
 }
 
-fn setup_server(server_builder: &mut ServerBuilder) -> RegistryResult<()> {
-    Ok(())
+fn setup_server(server_builder:&mut RegistryServerBuilder, addr: String) -> RegistryResult<RegistryServer> {
+    Ok(server_builder
+        .with_addr(addr)
+        .build())
 }

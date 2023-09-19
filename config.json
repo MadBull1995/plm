@@ -1,16 +1,16 @@
 {
     "server": {
-        "port": 7676,
-        "host": "localhost"
+        "port": 7575,
+        "host": "[::]"
     },
     "storage": {
-        "s3": {
-            "bucketName": "some-bucket"
+        "local": {
+            "registryPath": "/plm-registry/data"
         }
     },
     "data": {
-        "host": "localhost:5432",
-        "username": "some_admin",
-        "password": "some_secert"
+        "host": "db:5432",
+        "username": "admin",
+        "password": "password"
     }
 }

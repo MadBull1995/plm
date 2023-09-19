@@ -7,7 +7,7 @@ use serde::Serialize;
 
 struct TabDelimited;
 
-pub const plm_CONFIG_FILE: &str = ".plmrc";
+pub const PLM_CONFIG_FILE: &str = ".plmrc";
 
 #[derive(Debug)]
 pub enum Entry {
@@ -21,6 +21,17 @@ use std::collections::HashMap;
 use crate::Manifest;
 
 impl FileSystem {
+
+    /// Checks if a directory exists at the given path
+    pub fn dir_exists(dir_path: &str) -> bool {
+        Path::new(dir_path).is_dir()
+    }
+
+    /// Checks if a file exists at the given path
+    pub fn file_exists(file_path: &str) -> bool {
+        Path::new(file_path).is_file()
+    }
+
     pub fn create_dir(dir_path: &str) -> io::Result<()> {
         fs::create_dir_all(dir_path)
     }
@@ -123,17 +134,19 @@ impl FileSystem {
     }
 
     pub fn parse_plmrc_file(home: bool) -> io::Result<HashMap<String, String>> {
-        let mut file = File::open(Self::join_paths(
-            Self::current_dir().unwrap(),
-            plm_CONFIG_FILE,
-        ))?;
+        let mut file: Option<File> = None;
         if home {
-            file = File::open(Self::join_paths(
+            file = Some(File::open(Self::join_paths(
                 Self::get_home_directory().unwrap(),
-                plm_CONFIG_FILE,
-            ))?;
+                PLM_CONFIG_FILE,
+            ))?);
+        } else {
+            file = Some(File::open(Self::join_paths(
+                Self::current_dir().unwrap(),
+                PLM_CONFIG_FILE,
+            ))?);
         }
-        let reader = BufReader::new(file);
+        let reader = BufReader::new(file.unwrap());
         let mut map = HashMap::new();
 
         for line in reader.lines() {
@@ -170,5 +183,29 @@ impl FileSystem {
     pub fn read_binary_file(file_path: &Path) -> io::Result<Vec<u8>> {
         let contents = fs::read(file_path)?;
         Ok(contents)
+    }
+
+    pub fn copy_file(src_path: &Path, dest_path: &Path) -> io::Result<()> {
+        println!("{:?}->{:?}", src_path, dest_path);
+
+        // Open the source file for reading
+        let mut src_file = File::open(src_path)?;
+    
+        // Create or truncate the destination file for writing
+        let mut dest_file = File::create(dest_path)?;
+    
+        // Allocate a buffer to hold file data
+        let mut buffer = vec![0; 4096];
+    
+        // Read from source and write to destination
+        loop {
+            let bytes_read = src_file.read(&mut buffer)?;
+            if bytes_read == 0 {
+                break;
+            }
+            dest_file.write_all(&buffer[0..bytes_read])?;
+        }
+    
+        Ok(())
     }
 }

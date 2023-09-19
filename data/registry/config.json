@@ -1,0 +1,16 @@
+{
+    "server": {
+        "port": 7585,
+        "host": "[::]"
+    },
+    "storage": {
+        "local": {
+            "registryPath": "/plm-registry/data"
+        }
+    },
+    "data": {
+        "host": "db:5432",
+        "username": "admin",
+        "password": "password"
+    }
+}

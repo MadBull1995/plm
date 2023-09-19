@@ -51,6 +51,18 @@ pub mod utils {
 pub struct Cli {
     #[command(subcommand)]
     pub command: Commands,
+
+    /// Turn debugging information on
+    #[arg(short, long, action = clap::ArgAction::SetTrue)]
+    pub quiet: bool,
+
+    /// Turn debugging information on
+    #[arg(short, long, action = clap::ArgAction::SetTrue)]
+    pub debug: bool,
+
+    /// Turn debugging communication information on
+    #[arg(long, action = clap::ArgAction::SetTrue)]
+    pub debug_txrx: bool,
 }
 
 /// A subcommand for plm
@@ -72,26 +84,42 @@ pub enum Commands {
     Login(Login),
 
     /// Saving login creds for the registry
-    Config(ConfigCommand),
+    Config(ConfigArgs),
     // Lists installed packages
     // List(List),
 }
 
-/// Create a new workspace
 #[derive(Debug, Args)]
-pub struct ConfigCommand {
-    /// An action to take on .plmrc global file
-    pub action: ConfigAction,
+#[command(args_conflicts_with_subcommands = true)]
+pub struct ConfigArgs {
+    #[command(subcommand)]
+    pub command: Option<ConfigCommand>,
 
-    /// The config key
-    pub key: String,
+    // #[command(flatten)]
+    // push: StashPushArgs,
+}
 
-    /// The new config value
-    pub value: Option<String>,
-
-    /// Verbose mode
-    #[arg(short, long)]
-    pub verbose: bool,
+/// Create a new workspace
+#[derive(Debug, Subcommand)]
+pub enum ConfigCommand {
+    #[clap(about = "Get a value from the config")]
+    Get {
+        /// The config key to get
+        key: String,
+    },
+    #[clap(about = "Set a value in the config")]
+    Set {
+        /// The config key to set
+        key: String,
+        /// The new value to set
+        value: String,
+    },
+    #[clap(about = "Show the entire config")]
+    Show {
+        /// Show the configs in JSON format
+        #[arg(long, action = clap::ArgAction::SetTrue)]
+        json: bool,
+    },
 }
 
 #[derive(Debug, ValueEnum, Clone)]
@@ -103,17 +131,13 @@ pub enum ConfigAction {
 /// Create a new workspace
 #[derive(Debug, Args)]
 pub struct Init {
-    /// Verbose mode
-    #[arg(short, long)]
-    pub verbose: bool,
+    
 }
 
 /// Create a new workspace
 #[derive(Debug, Args)]
 pub struct Login {
-    /// Verbose mode
-    #[arg(short, long)]
-    pub verbose: bool,
+    
 }
 
 /// Installs a package
@@ -127,9 +151,7 @@ pub struct Install {
     #[arg(short, long)]
     pub global: bool,
 
-    /// Verbose mode
-    #[arg(short, long)]
-    pub verbose: bool,
+    
 }
 
 /// Uninstalls a package
@@ -137,9 +159,7 @@ pub struct Install {
 pub struct Uninstall {
     /// The name of the package to uninstall
     pub name: String,
-    /// Verbose mode
-    #[arg(short, long)]
-    pub verbose: bool,
+    
 }
 
 /// Publishes a package
@@ -147,9 +167,7 @@ pub struct Uninstall {
 pub struct Publish {
     /// The path to the package directory
     pub path: Option<String>,
-    /// Verbose mode
-    #[arg(short, long)]
-    pub verbose: bool,
+    
 }
 
 pub fn parse_cli() -> Cli {

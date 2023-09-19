@@ -1,5 +1,5 @@
 extern crate colored;
-
+use log::{debug, error, log_enabled, info, Level, warn};
 use colored::*;
 use dialoguer::theme::ColorfulTheme;
 
@@ -22,15 +22,15 @@ pub struct Prompter {
 impl Prompter {
     fn display(&self) {
         match self.message_type {
-            MessageType::Task => println!(
+            MessageType::Task => info!(
                 "{}",
                 format!("[{}/{}] {}", self.step, self.total, self.text).cyan()
             ),
-            MessageType::Error => println!("{}", format!("> [ERROR]: {}", self.text).red()),
-            MessageType::Warning => println!("{}", format!("> [WARN]: {}", self.text).yellow()),
-            MessageType::Info => println!("{}", format!("> [INFO]: {}", self.text).bold()),
-            MessageType::Normal => println!("{}", self.text),
-            MessageType::Verbose => println!("{}", format!("> [DEBUG]: {}", self.text).dimmed()),
+            MessageType::Error => error!("{}", format!("> [ERROR]: {}", self.text).red()),
+            MessageType::Warning => warn!("{}", format!("> [WARN]: {}", self.text).yellow()),
+            MessageType::Info => info!("{}", format!("> [INFO]: {}", self.text).bold()),
+            MessageType::Normal => info!("{}", self.text),
+            MessageType::Verbose => debug!("{}", format!("> [DEBUG]: {}", self.text).dimmed()),
         }
     }
 

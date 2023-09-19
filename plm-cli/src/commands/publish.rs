@@ -66,86 +66,91 @@ pub async fn publish_command(
     let include_path = plm_core::protoc::include_path()
         .map_err(|err| PlmError::InternalError("Failed to get include path".to_string()))?;
 
-    // Compile the proto files using `tonic_build`
-    tonic_build::configure()
-        .file_descriptor_set_path(FileSystem::join_paths(&dot_plm_builds, "build.pb"))
-        .out_dir(&dot_plm_path)
-        .protoc_arg(format!("-I{}", proto_path.to_string_lossy()))
-        .build_client(false)
-        .build_server(false)
-        .build_transport(false)
-        .compile(&paths, &[include_path])
-        .map_err(|err| PlmError::FileSystemError(err).into())?;
-
-    let build_fd = FileSystem::join_paths(configs.current_dir, ".plm/builds/build.pb");
-    let (fd, fd_bytes) = parse_fd_to_protobuf(build_fd)?;
-    let packages_to_files = parse_package_files_map(&fd);
-
-    Prompter::task(
-        2,
-        4,
-        format!(
-            "Compiled {} files in {} packages",
-            paths.len(),
-            packages_to_files.keys().len()
-        )
-        .as_str(),
-    );
-
-    if verbose {
-        for pkg in packages_to_files.keys() {
-            Prompter::verbose(&format!(
-                "{}:\n\t - {}",
-                pkg,
-                packages_to_files.get(pkg).unwrap().join("\n\t - ")
-            ))
-        }
-    }
-
-    Prompter::task(3, 4, "Validating");
-
-    // Generate package metadata
-    let parse_packages = |(key, value)| -> plm_core::Package {
-        let files_with_content = parse_file_contents(proto_path.clone(), value);
-        match files_with_content {
-            Ok(f) => plm_core::Package {
-                name: key,
-                files: f,
-                metadata: HashMap::new(),
-                ..Default::default()
-            },
-            Err(e) => {
-                Prompter::error(&format!("error on reading proto file: {:?}", e));
-                plm_core::Package::default()
+    if !FileSystem::dir_exists(proto_path.to_str().unwrap()) {
+        Prompter::error("must have a valid 'src_dir' value pointing to a root .proto files directory");
+        Err(PlmError::InternalError("missing .proto files as input".to_string()))
+    } else {
+        // Compile the proto files using `tonic_build`
+        tonic_build::configure()
+            .file_descriptor_set_path(FileSystem::join_paths(&dot_plm_builds, "build.pb"))
+            .out_dir(&dot_plm_path)
+            .protoc_arg(format!("-I{}", proto_path.to_string_lossy()))
+            .build_client(false)
+            .build_server(false)
+            .build_transport(false)
+            .compile(&paths, &[include_path])
+            .map_err(|err| PlmError::FileSystemError(err).into())?;
+    
+        let build_fd = FileSystem::join_paths(configs.current_dir, ".plm/builds/build.pb");
+        let (fd, fd_bytes) = parse_fd_to_protobuf(build_fd)?;
+        let packages_to_files = parse_package_files_map(&fd);
+    
+        Prompter::task(
+            2,
+            4,
+            format!(
+                "Compiled {} files in {} packages",
+                paths.len(),
+                packages_to_files.keys().len()
+            )
+            .as_str(),
+        );
+    
+        if verbose {
+            for pkg in packages_to_files.keys() {
+                Prompter::verbose(&format!(
+                    "{}:\n\t - {}",
+                    pkg,
+                    packages_to_files.get(pkg).unwrap().join("\n\t - ")
+                ))
             }
         }
-    };
-
-    let pkgs = packages_to_files.into_iter().map(parse_packages);
-    let release_id = hash_fd_set(fd_bytes);
-    let mut lib_md = HashMap::new();
     
-    lib_md.insert("checksum".to_string(), release_id.to_string());
+        Prompter::task(3, 4, "Validating");
     
-    if verbose {
-        Prompter::verbose(&format!("release: {}", release_id));
+        // Generate package metadata
+        let parse_packages = |(key, value)| -> plm_core::Package {
+            let files_with_content = parse_file_contents(proto_path.clone(), value);
+            match files_with_content {
+                Ok(f) => plm_core::Package {
+                    name: key,
+                    files: f,
+                    metadata: HashMap::new(),
+                    ..Default::default()
+                },
+                Err(e) => {
+                    Prompter::error(&format!("error on reading proto file: {:?}", e));
+                    plm_core::Package::default()
+                }
+            }
+        };
+    
+        let pkgs = packages_to_files.into_iter().map(parse_packages);
+        let release_id = hash_fd_set(fd_bytes);
+        let mut lib_md = HashMap::new();
+        
+        lib_md.insert("checksum".to_string(), release_id.to_string());
+        
+        if verbose {
+            Prompter::verbose(&format!("release: {}", release_id));
+        }
+    
+        let lib = plm_core::Library {
+            name: manifest.name,
+            version: manifest.version,
+            fd_set: fd_set_to_bytes(&fd),
+            metadata: lib_md,
+            packages: pkgs.collect(),
+        };
+    
+        let mut registry_client_builder = CliRegistryClientBuilder::new()
+            .build()
+            .await?;
+        println!("{:?}", registry_client_builder);
+    
+        Prompter::task(4, 4, "Upload");
+        Ok(())
     }
-
-    let lib = plm_core::Library {
-        name: manifest.name,
-        version: manifest.version,
-        fd_set: fd_set_to_bytes(&fd),
-        metadata: lib_md,
-        packages: pkgs.collect(),
-    };
-
-    // let mut registry_client_builder = CliRegistryClientBuilder::new()
-    //     .build()
-    //     .await?;
-    // println!("{:?}", registry_client_builder);
-
-    Prompter::task(4, 4, "Upload");
-    Ok(())
 }
 
 fn parse_file_contents(proto_dir: PathBuf, file_paths: Vec<String>) -> PlmResult<Vec<File>> {

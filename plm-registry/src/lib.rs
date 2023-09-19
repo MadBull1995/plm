@@ -26,7 +26,7 @@ pub mod api {
     mod server;
     pub mod service;
 
-    pub use server::ServerBuilder;
+    pub use server::{RegistryServer, RegistryServerBuilder};
 }
 
 pub mod utils {
