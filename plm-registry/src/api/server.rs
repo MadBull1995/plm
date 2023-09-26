@@ -1,21 +1,32 @@
-use std::{time::Duration, net::SocketAddr};
+use std::{net::SocketAddr, time::Duration, env, sync::Arc};
 
-use tower::{ServiceBuilder, layer::{util::Stack, LayerFn}};
-use tonic::{async_trait, transport::{Server as GrpcServer, Channel}};
-use plm_core::RegistryServiceServer;
+// use tower::{ServiceBuilder, layer::{util::Stack, LayerFn}};
+use plm_core::{registry_service_server, user_service_server};
+use tonic::{
+    async_trait,
+    transport::{Channel, Server as GrpcServer, server::Router}, metadata::MetadataValue,
+};
+use tracing::{debug, warn};
 
-use crate::service::RegistryService;
-#[derive(Debug, Clone, Copy)]
+use crate::{
+    psql::QueryLayer,
+    service::{RegistryService, UserService}, local::LocalStorage, RegistryStorage,
+};
+
+lazy_static::lazy_static! {
+    pub static ref SECRET: String = env::var("PLM_SECRET").unwrap_or_else(|_| "default_secret".to_string());
+}
+
+#[derive(Clone)]
 pub struct RegistryServerBuilder {
     addr: Option<SocketAddr>,
+    storage: Arc<Box<dyn RegistryStorage + Send + Sync>>,
 }
 
 impl RegistryServerBuilder {
-    pub fn new() -> Self {
+    pub fn new(storage: Box<dyn RegistryStorage+ Send + Sync>) -> Self {
         let addr = "127.0.0.1:7575".parse().unwrap();
-        Self {
-            addr: Some(addr)
-        }
+        Self { addr: Some(addr), storage: Arc::new(storage) }
     }
 
     pub fn with_addr(&mut self, addr: String) -> &mut Self {
@@ -23,48 +34,99 @@ impl RegistryServerBuilder {
         self
     }
 
-    pub fn build(self) -> RegistryServer {
 
-        RegistryServer { 
+    pub fn build(self) -> RegistryServer {
+        let query_layer = QueryLayer::new();
+        let user = UserService {
+            data: query_layer.clone(),
+        };
+        let registry = RegistryService{
+            data: query_layer.clone(),
+            storage: self.storage,
+        };
+        RegistryServer {
             addr: self.addr.unwrap(),
-            service: RegistryService::default()
+            registry,
+            user,
         }
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct RegistryServer {
     addr: SocketAddr,
-    service: RegistryService,
+    registry: RegistryService,
+    user: UserService,
 }
 
 impl RegistryServer {
+    // fn setup_layer(&self) -> Stack<tower::timeout::TimeoutLayer, Stack<tower::load_shed::LoadShedLayer, tower::layer::util::Identity>> {
+    //     let layer = ServiceBuilder::new()
+    //         .load_shed()
+    //         .timeout(Duration::from_secs(30))
+    //         .into_inner();
+    //     layer
+    // }
 
-    fn setup_layer(&self) -> Stack<tower::timeout::TimeoutLayer, Stack<tower::load_shed::LoadShedLayer, tower::layer::util::Identity>> {
-        let layer = ServiceBuilder::new()
-            .load_shed()
-            .timeout(Duration::from_secs(30))
-            .into_inner();
-        layer
-    }
+    async fn setup_and_run(
+        &self,
+        mut server_builder: GrpcServer
+    ) {
+        debug!("setting up services");
+        let server = server_builder
+            .add_service(
+                registry_service_server::RegistryServiceServer::with_interceptor(
+                    self.registry.clone(),
+                    auth_guard
+                )
+            )
+            .add_service( user_service_server::UserServiceServer::new(self.user.clone()))
+            .serve(self.addr).await;
 
-    fn setup_service(&self) -> RegistryServiceServer<RegistryService> {
-        RegistryServiceServer::new(self.service.clone())
+        match server {
+            Err(err) => panic!("registry server failed: {:?}", err),
+            Ok(_) => println!("registry server exited"),
+        }
     }
 
     pub async fn run(&self) {
+        debug!("running gRPC server -> {}", self.addr);
+        // let layer = self.setup_layer();
+        let server_builder = GrpcServer::builder();
+        
+        self.setup_and_run(server_builder).await;
+      
+    }
+}
+use crate::utils::auth;
 
-        let layer = self.setup_layer();
-        
-        let registry_service = self.setup_service();
-        let server = GrpcServer::builder()
-            .layer(layer)
-            .add_service(registry_service)
-            .serve(self.addr).await;
-        
-        match server {
-            Err(err) => panic!("registry server failed: {:?}", err),
-            Ok(_) => println!("registry server exited")
-        }
+/// This function will get called on each inbound request, if a `Status`
+/// is returned, it will cancel the request and return that status to the
+/// client.
+fn auth_guard(req: tonic::Request<()>) -> Result<tonic::Request<()>, tonic::Status> {
+    warn!("Intercepting request: {:?}", req);
+    
+    match req.metadata().get("authorization") {
+        Some(t) => {
+            match extract_bearer_token(t.to_str().unwrap()) {
+                None => Err(tonic::Status::unauthenticated(format!("Invalid token format should be: Bearer <token>"))),
+                Some(t) => {
+                    if auth::validate_jwt_token(t, SECRET.as_bytes()).is_ok() {
+                        Ok(req)
+                    } else {
+                        Err(tonic::Status::unauthenticated("No valid auth token"))  
+                    } 
+                }
+            }
+        },
+        _ => Err(tonic::Status::unauthenticated("Missing authorization metadata")),
+    }
+}
+
+fn extract_bearer_token(s: &str) -> Option<&str> {
+    if s.starts_with("Bearer ") && s.len() > "Bearer ".len() {
+        Some(&s["Bearer ".len()..])
+    } else {
+        None
     }
 }

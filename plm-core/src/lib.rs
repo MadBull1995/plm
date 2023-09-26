@@ -23,6 +23,16 @@ pub mod plm {
             tonic::include_proto!("plm.library.v1");
         }
     }
+    pub mod user {
+        pub mod v1 {
+            tonic::include_proto!("plm.user.v1");
+        }
+    }
+    pub mod organization {
+        pub mod v1 {
+            tonic::include_proto!("plm.organization.v1");
+        }
+    }
 }
 
 pub mod protoc {
@@ -31,9 +41,40 @@ pub mod protoc {
 
 /// A collection of helpers that shared to multiple logics
 pub mod utils {
+    use sha2::{Digest, Sha256};
+    pub mod auth;
     pub mod dag;
     pub mod fs;
     pub mod versioning;
+    pub fn hash_fd_set(fd_set_bytes: Vec<u8>) -> String {
+        let mut hasher = Sha256::new();
+        hasher.update(&fd_set_bytes);
+        let hash = hasher.finalize();
+        let hex_string = hex::encode(hash);
+
+        hex_string
+    }
+}
+
+pub mod library {
+    pub mod store;
+}
+
+pub mod manifest;
+
+pub mod registry {
+    use tonic::async_trait;
+
+    use crate::plm;
+
+    #[async_trait]
+    pub trait Registry {
+        async fn download(
+            &mut self,
+            dep: plm::library::v1::Dependency,
+        ) -> anyhow::Result<plm::library::v1::Library>;
+        async fn publish(&self, lib: plm::library::v1::Library) -> anyhow::Result<()>;
+    }
 }
 
 // Custom serialization
@@ -50,6 +91,7 @@ impl serde::Serialize for plm::package::v1::Manifest {
         map.serialize_entry("license", &self.license)?;
         map.serialize_entry("authors", &self.authors)?;
         map.serialize_entry("repositoryUrl", &self.repository_url)?;
+        map.serialize_entry("exclude", &self.exclude)?;
         map.serialize_entry("metadata", &self.metadata)?;
         map.serialize_entry("dependencies", &self.dependencies)?;
         map.end()
@@ -85,6 +127,7 @@ impl<'de> Deserialize<'de> for plm::package::v1::Manifest {
                         "license" => manifest.license = map.next_value()?,
                         "authors" => manifest.authors = map.next_value()?,
                         "repositoryUrl" => manifest.repository_url = map.next_value()?,
+                        "exclude" => manifest.exclude = map.next_value()?,
                         "metadata" => manifest.metadata = map.next_value()?,
                         "dependencies" => manifest.dependencies = map.next_value()?,
                         _ => (),
@@ -455,6 +498,7 @@ impl<'de> Deserialize<'de> for Server {
             {
                 let mut port = None;
                 let mut host = None;
+                let mut log_level = None;
                 while let Some(key) = map.next_key::<String>()? {
                     if key == "port" {
                         if port.is_some() {
@@ -466,6 +510,11 @@ impl<'de> Deserialize<'de> for Server {
                             return Err(de::Error::duplicate_field("host"));
                         }
                         host = Some(map.next_value()?);
+                    } else if key == "logLevel" {
+                        if log_level.is_some() {
+                            return Err(de::Error::duplicate_field("logLevel"));
+                        }
+                        log_level = Some(map.next_value()?);
                     } else {
                         return Err(de::Error::unknown_field(&key, &["port"]));
                     }
@@ -473,8 +522,13 @@ impl<'de> Deserialize<'de> for Server {
 
                 let port = port.ok_or_else(|| de::Error::missing_field("port"))?;
                 let host = host.ok_or_else(|| de::Error::missing_field("host"))?;
+                let log_level = log_level.unwrap_or_else(|| 0);
 
-                Ok(Server { port, host })
+                Ok(Server {
+                    port,
+                    host,
+                    log_level,
+                })
             }
         }
 
@@ -482,19 +536,25 @@ impl<'de> Deserialize<'de> for Server {
     }
 }
 
-use crate::plm::registry::v1::storage::StorageBackend;
+use crate::plm::registry::v1::{server, storage::StorageBackend};
 // Re exporting for easy use by 3rd parties
 pub use crate::{
     plm::{
         library::v1::Library,
+        organization::v1::{
+            organization_service_client, organization_service_server, AddUserRequest,
+            CreateOrganizationRequest, GetOrganizationRequest, GetOrganizationResponse,
+            Organization, RemoveOrganizationRequest, RemoveUserRequest, UpdateUserRoleRequest,
+        },
         package::v1::{LockFile, LockedDependency, Manifest, Package},
         registry::v1::{
-            download_request::FullOrPartial,
-            download_response::ProtobufOrGz,
-            registry_service_client::RegistryServiceClient,
-            registry_service_server::{RegistryService, RegistryServiceServer},
-            Compressions, Config, Data, DownloadRequest, DownloadResponse, Local,
-            PartialDownloadRequest, Server, Storage, S3,
+            download_request::FullOrPartial, download_response::ProtobufOrGz,
+            registry_service_client, registry_service_server, Compressions, Config, Data,
+            DownloadRequest, DownloadResponse, Local, PartialDownloadRequest, Server, Storage, S3,
+            PublishRequest
+        },
+        user::v1::{
+            user_service_client, user_service_server, CreateUserRequest, LoginRequest, LoginResponse, Role, User,
         },
     },
     utils::fs::FileSystem,

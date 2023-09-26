@@ -2,4 +2,7 @@
 pub enum RegistryError {
     #[error("Invalid config setup: {0:?}")]
     InvalidConfigSetup(String),
+
+    #[error("Invalid file content: {0:?}")]
+    InvalidFileContent(String),
 }

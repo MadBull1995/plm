@@ -1,23 +1,231 @@
-use plm_core::{RegistryService as RegistryServiceExt, DownloadRequest, DownloadResponse, Library};
+use std::sync::Arc;
+
+use diesel::result::{DatabaseErrorKind, Error};
+use plm_core::{
+    registry_service_server, user_service_server, utils::{auth, fs}, CreateUserRequest, DownloadRequest,
+    DownloadResponse, Library, LoginRequest, User, LoginResponse, PublishRequest, library::store::LibraryStore, FullOrPartial,
+};
+use prost_types::Timestamp;
+use tokio::sync::Mutex;
 use tonic::{async_trait, Request, Response, Status};
+use tracing::{debug, info, error, warn};
 
-#[derive(Debug, Clone, Default)]
+use crate::{psql::QueryLayer, api::server::SECRET, local::LocalStorage, RegistryStorage, models::NewVersion};
+
+#[derive(Clone)]
 pub struct RegistryService {
-
+    pub(crate) data: QueryLayer,
+    pub(crate) storage: Arc<Box<dyn RegistryStorage + Sync + Send>>
 }
 
 #[async_trait]
-impl RegistryServiceExt for RegistryService {
-    async fn download(&self,request: Request<DownloadRequest>) -> Result<Response<DownloadResponse> ,tonic::Status, > {
-        
-        let mut lib = Library::default();
-        
+impl registry_service_server::RegistryService for RegistryService {
+    async fn download(
+        &self,
+        request: Request<DownloadRequest>,
+    ) -> Result<Response<DownloadResponse>, tonic::Status> {
+        let lib_req = request.into_inner();
+        info!("download lib: {:?}", lib_req.clone());
 
-        let mut downloaded_lib = DownloadResponse::default();
-        downloaded_lib.protobuf_or_gz = Some(
-            plm_core::ProtobufOrGz::Protobuf(lib)
-        );
+        match lib_req.full_or_partial {
+            None => {
+                return Err(tonic::Status::invalid_argument(format!("must specify a download request full/partial")));
+            },
+            Some(r) => {
+                match r {
+                    FullOrPartial::Full(full) => {
 
-        Ok(Response::new(downloaded_lib))
+                        let latest = self
+                            .data
+                            .get_latest_version_for_lib(&full)
+                            .await
+                            .map_err(|e| tonic::Status::not_found(format!("failed to fetch library: {} - {:?}", full, e)))?;
+                        match latest {
+                            Some(latest) => {
+                                let release = self
+                                    .data
+                                    .get_release(&full, Some(latest.max_version_id), None)
+                                    .await
+                                    .map_err(|e| tonic::Status::internal(format!("error on fetching library: {:?}", e)))?;
+                                 // self.data.get_release(, lib_version, lib_scope)
+                                let mut lib = Library::default();
+                                match release {
+                                    None => {
+                                        Err(tonic::Status::not_found(format!("library release not found: {}", &full)))
+                                    },
+                                    Some(mut version) => {
+                                        lib.name = version.0.name;
+                                        lib.version = version.1.pop().unwrap().version_number.clone();
+                                        let mut lib_full_path = String::new();
+                                        lib_full_path.push_str(&format!("{}/{}", lib.name, lib.version));
+                                        println!("{:?}", lib_full_path);
+                                        // TODO: Handle library file parsing
+                                        let files = self.storage
+                                            .load(&lib_full_path)
+                                            .map_err(|e| tonic::Status::internal(format!("failed to fetch proto files: {}", e)))?;
+                                        let mut downloaded_lib = DownloadResponse::default();
+                                        lib.packages.push(plm_core::Package { files: files, ..Default::default() });
+                                        downloaded_lib.protobuf_or_gz = Some(plm_core::ProtobufOrGz::Protobuf(lib));
+                                        Ok(Response::new(downloaded_lib))
+                                    }
+                                }
+                            },
+                            None => {
+                                Err(tonic::Status::unimplemented(format!("not implemented yet to install a pinned version: {}", &full)))
+                            }
+                        }
+
+                        
+                    },
+                    FullOrPartial::Partial(partial) => {
+                       return  Err(tonic::Status::unimplemented(format!("not implemented yet")));
+                    }
+                }
+            }
+        }
+   
     }
+
+    async fn publish(
+        &self,
+        request: Request<PublishRequest>, 
+    ) -> Result<Response<()>, tonic::Status> {
+        let pub_req = request.into_inner().lib.unwrap();
+        info!("publish lib: {:?} : {}", pub_req.name, pub_req.version);
+        
+        let release = self
+            .data
+            .get_release(&pub_req.name, None, None)
+            .await
+            .map_err(|e| tonic::Status::internal(format!("error on fetching library: {:?}", e)))?;
+        info!("{:?}", release);
+        let mut conn = self.data.conn.lock().await;
+        let transaction = conn.build_transaction()
+            .run(|c| {
+                let mut library = None;
+                match release {
+                    Some(r) => {
+                        library = Some(r.0);
+                    },
+                    None => {
+                        let release = self
+                            .data
+                            .create_release(&pub_req, c)?;
+                        library = Some(release);
+                    }
+                }
+                
+                self.storage.save(pub_req.clone())
+                    .map_err(|e| {
+                        error!("{:?}", e);
+                        diesel::result::Error::RollbackTransaction
+                    })?;
+                let new_version = NewVersion { library_id: library.as_ref().unwrap().lib_id, version_number: &pub_req.version};
+                let version = self.data.create_version(&new_version, c)
+                    .map_err(|e| {
+                        error!("{:?}", e);
+                        diesel::result::Error::RollbackTransaction
+                    })?;
+
+                println!("{:?}", version);
+                
+                // TODO: Add deps
+    
+                Ok(library)
+            });
+
+        match transaction {
+            Err(Error::DatabaseError(kind, info)) => {
+                match kind {
+                    DatabaseErrorKind::UniqueViolation => {
+                        warn!("{:?}",info);
+                        Err(Status::already_exists(format!("release is already exists, try to publish with a differnt version.")))
+                    },
+                    _ => {
+                        Err(Status::internal(format!("some error occured during db session: {:?}", kind)))
+                    }
+                }
+            },
+            Err(e) => {
+                Err(Status::internal(format!("some error occured during db session: {:?}", e)))
+            }
+            Ok(r) => {
+                println!("{:?}", r);
+                
+                Ok(Response::new(()))
+            }
+        }
+        
+        
+    }
+}
+
+#[derive(Clone)]
+pub struct UserService {
+    pub(crate) data: QueryLayer,
+}
+
+#[async_trait]
+impl user_service_server::UserService for UserService {
+    async fn create_user(
+        &self,
+        request: Request<CreateUserRequest>,
+    ) -> Result<Response<User>, Status> {
+        let mut u = request.into_inner();
+        info!("create user: {}", u.username.clone());
+        u.password = auth::Argon2Helper::hash_password(&u.password)
+            .map_err(|err| Status::internal(format!("failed to hash user password: {}", err)))?;
+
+        let new_db_user = self
+            .data
+            .create_user(&u)
+            .await
+            .map_err(|err| Status::internal(format!("failed to create new user: {:?}", err)))?;
+
+        let mut response = plm_core::User::default();
+
+        response.username = u.username;
+        // response.created_at = Some(timestamp);
+        debug!("{:?}: {}", new_db_user.user_id, new_db_user.username);
+        Ok(Response::new(response))
+    }
+
+    async fn login(&self, request: Request<LoginRequest>) -> Result<Response<plm_core::LoginResponse>, Status> {
+        let login_req = request.into_inner();
+        info!("login for user: {}", login_req.username.clone());
+
+        let user = self.data.get_user(&login_req.username).await.map_err(|e| {
+            Status::internal(format!(
+                "failed to get user: {} - {:?}",
+                login_req.username, e
+            ))
+        })?;
+        match user {
+            Some(u) => {
+                info!("fetched password: {}", u.password_hash);
+                let verify = auth::Argon2Helper::verify_password(login_req.token, u.password_hash).map_err(|e| {
+                    Status::internal(format!(
+                        "failed to verify user {} password - {:?}",
+                        login_req.username, e
+                    ))
+                })?;
+                if verify {
+                    match crate::auth::create_jwt_token(SECRET.as_bytes(), &u.user_id) {
+                        Err(e) => Err(Status::internal(format!("failed to generate token: {}", e))),
+                        Ok(jwt) => {
+                            let mut res = LoginResponse::default();
+                            res.token = jwt;
+                            Ok(Response::new(res))
+                        }
+                    }
+                } else {
+                    Err(Status::unauthenticated("invalid password"))
+                }
+            }
+            None => Err(Status::not_found("username not exists")),
+        }
+    }
+    // async fn login(&self,request:Request<LoginRequest>) -> Result<Response<()> ,Status> {
+    //     Ok(Response::new(());
+    // }
 }

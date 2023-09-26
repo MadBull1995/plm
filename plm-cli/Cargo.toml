@@ -31,10 +31,9 @@ protobuf = "3.2.0"
 prost-build = "0.12.1"
 tonic-build = "0.10.0"
 human-panic = "1.2.0"
-sha2 = "0.10.7"
-hex = "0.4.3"
 env_logger = "0.10.0"
 log = "0.4.20"
+anyhow = "1.0.75"
 
 [build-dependencies]
 tonic-build = "0.10.0"

@@ -1,7 +1,7 @@
 extern crate colored;
-use log::{debug, error, log_enabled, info, Level, warn};
 use colored::*;
 use dialoguer::theme::ColorfulTheme;
+use log::{info, error, warn, debug};
 
 pub enum MessageType {
     Task,

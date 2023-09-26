@@ -1,37 +1,103 @@
 use std::path::Path;
 
-use plm_core::Manifest;
+use plm_core::{FileSystem, Manifest, DownloadRequest, library::store::LibraryStore, plm::library::v1::Dependency};
 
-use crate::{utils::{errors::PlmResult, lock::{ProtoLock, Library}, prompter::Prompter}, Install};
+use crate::{
+    utils::{
+        errors::{PlmError, PlmResult},
+        lock::{Library, ProtoLock},
+        prompter::Prompter, configs::CliConfigs,
+    },
+    Install, registry::client::{CliRegistryClient, CliRegistryClientBuilder},
+};
+
+pub async fn install_command(
+    install: Install,
+    manifest: &mut Manifest,
+    manifest_path: &Path,
+    proto_lock_path: &Path,
+    proto_lock: &mut ProtoLock,
+    registry_url: String,
+    token: String,
+) -> anyhow::Result<()> {
+    if let Some(lib_name) = install.name {
+        Prompter::info(&lib_name);
+        validate_lib_name(&lib_name)?;
+
+        Prompter::task(2, 6, &format!("installing library -> {}", lib_name));
+
+        // TODO: Fetch Library from Registry
+        Prompter::task(3, 6, "fetching library from registry");
+
+        Prompter::task(4, 6, "resolving dependencies");
+        // Resolve library deps
+        let resolved_deps = proto_lock.resolve_dependencies(lib_name.clone())?;
+
+        let mut registry_client_builder = CliRegistryClientBuilder::new();
+        registry_client_builder
+            .with_addr(registry_url)
+            .with_token(token);
+        let mut client = registry_client_builder.build().await?;
+
+        let lib = LibraryStore::install(Dependency {
+            library_id: lib_name.clone(),
+            version: "".to_string()
+        }, &mut client).await?;
 
 
-pub async fn install_command(install: Install, manifest:&mut Manifest, proto_lock_path: &Path, proto_lock: &mut ProtoLock) -> PlmResult<()> {
-    // TODO: Fetch Library from Registry
-    Prompter::task(3, 6, "fetching library from registry");
+        let mut download_req = DownloadRequest::default();
+        download_req.full_or_partial = Some(
+            plm_core::FullOrPartial::Full(
+                lib_name.clone()
+            )
+        );
+        // let downloaded_lib = client.download(download_req).await?;
+        
+        // println!("{:?}", downloaded_lib);
+        // TODO: Download Dependencies
+        Prompter::task(5, 6, "fetching dependencies");
+
+        // Add library to the proto-lock file
+        let installed_lib = Library {
+            name: lib_name,
+            version: "0.0.1".to_string(),
+            dependencies: resolved_deps,
+        };
+
+        Prompter::task(6, 6, "updating proto-lock.json file");
+        proto_lock.add_library(installed_lib.clone());
+        proto_lock.validate()?;
+        proto_lock.to_file(proto_lock_path)?;
+        dbg!(proto_lock);
+
+        manifest
+            .dependencies
+            .insert(installed_lib.clone().name, installed_lib.version);
+        // println!("{:?}", install);
+        let path = FileSystem::join_paths(manifest_path.clone(), "proto-package.json");
+
+        FileSystem::write_json(path.to_str().unwrap(), &manifest)
+            .map_err(|e| anyhow::anyhow!(e))?;
+    } else {
+        // TODO: Handle all install
+        return Err(anyhow::anyhow!(
+            "Not supporting project global installs yet",
+        ));
+    }
+
+    Ok(())
+}
 
 
-    Prompter::task(4, 6, "resolving dependencies");
-    // Resolve library deps
-    let resolved_deps = proto_lock.resolve_dependencies(&install.name)?;
-
-    // TODO: Download Dependencies
-    Prompter::task(5, 6, "fetching dependencies");
-
-    // Add library to the proto-lock file
-    let installed_lib = Library {
-        name: install.name.to_string(),
-        version: "0.0.1".to_string(),
-        dependencies: resolved_deps,
-    };
-    
-    Prompter::task(6, 6, "updating proto-lock.json file");
-    proto_lock.add_library(installed_lib.clone());
-    proto_lock.validate()?;
-    proto_lock.to_file(proto_lock_path)?;
-    dbg!(proto_lock);
-
-    manifest.dependencies.insert(installed_lib.clone().name, installed_lib.version);
-    println!("{:?}", install);
-
+fn validate_lib_name(name: &str) -> anyhow::Result<()> {
+    if name.starts_with("@") {
+        if !name.chars().skip(1).all(|c| c.is_ascii_alphabetic() || c == '-' || c == '_' || c == '/') {
+            return Err(anyhow::anyhow!("Library name must consist of ASCII alphabetic characters, dash, lower dash, or forward slash"));
+        }
+    } else {
+        if !name.chars().all(|c| c.is_ascii_alphabetic() || c == '-' || c == '_') {
+            return Err(anyhow::anyhow!("Library name must consist of ASCII alphabetic characters, dash, or lower dash"));
+        }
+    }
     Ok(())
 }

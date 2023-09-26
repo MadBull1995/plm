@@ -15,3 +15,9 @@ message Library {
 	map<string, string> metadata = 4;
 	bytes fd_set = 5;
 }
+
+message Dependency {
+
+	string library_id = 1;
+	string version = 2;
+}

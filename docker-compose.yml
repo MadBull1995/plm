@@ -1,11 +1,9 @@
 version: '3.8'
-
 services:
   registry:
     image: plm-registry
     # environment:
       # - REGISTRY_CONFIG=.
-      # - PROTOT_REDIS_HOST="redis://redis/"
     networks:
       - plm_network
     depends_on:
@@ -13,28 +11,38 @@ services:
     ports:
       - "7575:7575"
     volumes:
-      - ./data/registry:/registry/plm-registry/libs
-      - ./data/registry/config.json:/registry/config.json
+      - ./data/registry/libs:/registry/libs
+      - ./data/registry/config.docker.json:/registry/config.json
 
-  
   db:
     image: postgres:13
     environment:
-      POSTGRES_USER: username
+      POSTGRES_USER: admin
       POSTGRES_PASSWORD: password
       POSTGRES_DB: registrydb
+    ports:
+      - "5432:5432"
     depends_on:
       - envoy
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD","pg_isready -U admin"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - plm_network
 
   envoy:
     image: envoyproxy/envoy:v1.27-latest
     volumes:
       - ./data/envoy/envoy.yaml:/etc/envoy/envoy.yaml
     ports:
-      - "8080:8080" # Expose HTTP port
-      - "8443:8443" # Expose HTTPS port
+      - "8080:8080"
+      - "8443:8443"
+    networks:
+      - plm_network
 
 networks:
   plm_network:

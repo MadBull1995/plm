@@ -84,6 +84,7 @@ fn default_server_setup() -> ServerSetup {
     ServerSetup {
         host: REGISTRY_HOST.to_string(),
         port: REGISTRY_PORT,
+        log_level: 0,
     }
 }
 

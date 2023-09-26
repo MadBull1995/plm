@@ -22,8 +22,10 @@ message Manifest {
 	string license = 6;
 	// Names of the authors or maintainers.
 	repeated string authors = 7;
+	// Exclude list of directories.
+	repeated string exclude = 8;
 	// List of dependencies.
-	map<string, string> dependencies = 8;
+	map<string, string> dependencies = 9;
 	// Custom metadata in key-value pairs.
-	map<string, string> metadata = 9;
+	map<string, string> metadata = 10;
 }

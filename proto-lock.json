@@ -1,0 +1,14 @@
+{
+  "libraries": [
+    {
+      "name": "test",
+      "version": "0.0.1",
+      "dependencies": []
+    },
+    {
+      "name": "@google/protobuf",
+      "version": "0.0.1",
+      "dependencies": []
+    }
+  ]
+}

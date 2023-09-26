@@ -1,31 +1,35 @@
-use std::{collections::HashMap, io::Write as ioWrite,fmt::Write, process::ExitCode, time::Duration};
+use anyhow::Context;
 use colored::*;
 use human_panic::setup_panic;
+use log::{debug, error, info, log_enabled, Level, LevelFilter};
 use plm_cli::{
     commands,
     helpers::{get_global_plmrc_path, get_manifest_from_file},
     parse_cli,
+    tracing::setup_tracing,
     utils::{
         self,
         configs::CliConfigs,
-        errors::{PlmResult, PlmError},
-        prompter::Prompter, lock::{ProtoLock, Library},
+        errors::{PlmError, PlmResult},
+        lock::{Library, ProtoLock},
+        prompter::Prompter,
     },
     Cli, Commands,
 };
 use plm_core::FileSystem;
+use std::{
+    collections::HashMap, fmt::Write, io::Write as ioWrite, process::ExitCode, time::Duration,
+};
 use tokio::{
     signal,
     sync::{mpsc, oneshot},
     time::sleep,
 };
-use log::{debug, error, log_enabled, info, Level};
+use tracing::instrument;
 
 #[tokio::main]
 async fn main() -> PlmResult<()> {
-    
     setup_panic!();
-
     let (shutdown_send, mut shutdown_recv) = mpsc::channel::<bool>(1);
 
     tokio::spawn(async move {
@@ -42,7 +46,8 @@ async fn main() -> PlmResult<()> {
     });
 
     let args = parse_cli();
-    setup_prompter(args.quiet);
+    setup_tracing(&args.quiet, &args.debug);
+    setup_prompter(args.debug, args.quiet);
 
     Prompter::info("starting plm process");
 
@@ -59,7 +64,7 @@ async fn main() -> PlmResult<()> {
             // Successfully processed the command
         }
         Err(err) => {
-            eprintln!("Error: {}", err);
+            eprintln!("Error: {:?}", err);
             std::process::exit(exitcode::DATAERR);
         }
     }
@@ -112,10 +117,7 @@ async fn process() -> PlmResult<()> {
     Ok(())
 }
 
-async fn process_commands(
-    args: Cli,
-    cfgs:&mut CliConfigs,
-) -> Result<(), PlmError> {
+async fn process_commands(args: Cli, cfgs: &mut CliConfigs) -> anyhow::Result<()> {
     match args.command {
         // <-------- Init-------------->
         Commands::Init(init) => {
@@ -125,29 +127,44 @@ async fn process_commands(
                 let proto_lock_path = proto_lock_path(&cfgs);
                 let proto_lock = ProtoLock::default();
                 proto_lock.to_file(proto_lock_path)?;
-    
-                commands::init::init_command(&false).await?;
+                debug!("{:#?}", init);
+                commands::init::init_command(&init,&false)
+                    .await
+                    .with_context(|| format!("init command errored"))?;
             }
         }
 
         // <-------- Install ---------->
         Commands::Install(install) => {
             let proto_lock_path = proto_lock_path(&cfgs);
-            let mut manifest = get_manifest_from_file(&args.debug)?;
+            let mut manifest = get_manifest_from_file()?;
 
             Prompter::task(1, 6, "resolving proto-lock.json file");
-            let mut proto_lock = ProtoLock::from_file(proto_lock_path.clone()).unwrap_or(ProtoLock::default());
-            if let Some(library) = proto_lock.find_library(&install.name) {
+            let mut proto_lock =
+                ProtoLock::from_file(proto_lock_path.clone()).unwrap_or(ProtoLock::default());
+            if let Some(library) = proto_lock.find_library(install.name.clone()) {
                 // Handle logic if package is already installed, perhaps prompt for update or exit
-                Prompter::warning(&format!("Package {} already exists under current lib: {}", library.name, manifest.name));
+                Prompter::warning(&format!(
+                    "Package {} already exists under current lib: {}",
+                    library.name, manifest.name
+                ));
+
+                Prompter::info(&format!(
+                    "Try to run: $ plm update {}",
+                    library.name
+                ));
             } else {
-                Prompter::task(2, 6, &format!("installing library -> {}", install.name.clone()));
                 commands::install::install_command(
                     install,
                     &mut manifest,
+                    FileSystem::current_dir().unwrap().as_path(),
                     &proto_lock_path,
                     &mut proto_lock,
-                ).await?;
+                    cfgs.registry.clone(),
+                    cfgs.clone().token.unwrap_or_default(),
+                )
+                .await
+                .with_context(|| format!("install command errored"))?;
             }
         }
 
@@ -156,50 +173,55 @@ async fn process_commands(
 
         // <-------- Publish ---------->
         Commands::Publish(publish) => {
-            let manifest = get_manifest_from_file(&args.debug)?;
-            commands::publish::publish_command(manifest, cfgs.clone(), args.debug).await?;
+            let manifest = get_manifest_from_file()?;
+            
+            commands::publish::publish_command(manifest, cfgs.clone(), cfgs.clone().token.unwrap_or_default())
+                .await
+                .with_context(|| format!("publish command errored"))?;
         }
 
         // <-------- Login ------------>
         Commands::Login(login) => {
-            println!("{:?}", login);
+            commands::login::login_command(cfgs,&login.user, &login.password, cfgs.registry.clone())
+                .await
+                .with_context(|| format!("login command errored"))?;
         }
 
         // <-------- Config ----------->
         Commands::Config(cfg) => {
             if let Some(cmd) = cfg.command {
                 match cmd {
-                    plm_cli::ConfigCommand::Get { key } => {
-                        match get_plmrc_file().await {
-                            Some(rc) => {
-                                let kv = rc.get_key_value(&key);
-                                match kv {
-                                    Some((key, value)) => {
-                                        Prompter::normal(format!("{} = {:#?}", key, value).as_str());
-                                    }
-                                    None => {
-                                        Prompter::warning(format!("Not found any configuration for -> '{}', under {:?} file", key, get_global_plmrc_path()).as_str());
-                                    }
+                    plm_cli::ConfigCommand::Get { key } => match get_plmrc_file().await {
+                        Some(rc) => {
+                            let kv = rc.get_key_value(&key);
+                            match kv {
+                                Some((key, value)) => {
+                                    Prompter::normal(format!("{} = {:#?}", key, value).as_str());
+                                }
+                                None => {
+                                    Prompter::warning(format!("Not found any configuration for -> '{}', under {:?} file", key, get_global_plmrc_path()).as_str());
                                 }
                             }
-                            None => {
-                                Prompter::warning("No configuration file found.");
-                            },
                         }
-                    }
+                        None => {
+                            Prompter::warning("No configuration file found.");
+                        }
+                    },
                     plm_cli::ConfigCommand::Set { key, value } => {
                         // let mut config = cfg().await.unwrap_or_else(|| HashMap::new());
                         // config.insert(key.clone(), value.clone());
                         if key == "registry".to_string() {
                             cfgs.registry = value;
                         } else {
+                            // cfgs.to_json()
+                            // serde_json::to_string(cfgs);
                             Prompter::warning(&format!("cant set '{}', use other commands to interact with this specific config", key));
                         }
 
-                        cfgs.write_plmrc_file();
+                        cfgs.write_plmrc_file()?;
                     }
                     plm_cli::ConfigCommand::Show { json } => {
-
+                        cfgs.to_json();
                     }
                 }
             }
@@ -217,8 +239,9 @@ async fn handle_shutdown(tx: mpsc::Sender<bool>) -> PlmResult<()> {
 }
 
 async fn get_plmrc_file() -> Option<HashMap<String, String>> {
-    let dot_plmrc = FileSystem::parse_plmrc_file(true)
-                .map_err(|err| return PlmError::InternalError(format!("Failed to load .plmrc: {}", err.to_string())));
+    let dot_plmrc = FileSystem::parse_plmrc_file(true).map_err(|err| {
+        return PlmError::InternalError(format!("Failed to load .plmrc: {}", err.to_string()));
+    });
     let mut plmrc: Option<HashMap<String, String>> = None;
     match dot_plmrc {
         Ok(cfg) => {
@@ -237,22 +260,26 @@ fn proto_lock_path(cfgs: &CliConfigs) -> std::path::PathBuf {
 
 fn check_lib_exists() -> bool {
     FileSystem::file_exists(
-        FileSystem::join_paths(
-            FileSystem::current_dir().unwrap(), "proto-package.json"
-        ).to_str().unwrap()
+        FileSystem::join_paths(FileSystem::current_dir().unwrap(), "proto-package.json")
+            .to_str()
+            .unwrap(),
     )
 }
 
-fn setup_prompter(quiet: bool) {
+fn setup_prompter(debug: u8, quiet: bool) {
     let mut log_builder = env_logger::builder();
     if quiet {
         log_builder.filter_level(log::LevelFilter::Off);
     } else {
-        log_builder.filter_level(log::LevelFilter::Debug);
+        log_builder.filter_level(
+            match debug {
+                1 => LevelFilter::Debug,
+                2 => LevelFilter::Trace,
+                _ => LevelFilter::Info
+            }
+        );
     }
     log_builder
-        .format(|buf, record| {
-            writeln!(buf, "{}", record.args())
-        })
+        .format(|buf, record| writeln!(buf, "{}", record.args()))
         .init();
 }

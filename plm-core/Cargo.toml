@@ -15,6 +15,15 @@ tonic = "0.10.0"
 semver = "1.0.18"
 dirs = "5.0.1"
 protoc-bin-vendored = { version = "3.0.0" }
+tokio = { version = "1.32.0", features = ["full"] }
+anyhow = "1.0.75"
+tonic-build = "0.10.0"
+protobuf = "3.2.0"
+sha2 = "0.10.7"
+hex = "0.4.3"
+tracing = "0.1.37"
+tracing-subscriber = "0.3.17"
+argon2 = "0.5.2"
 
 [build-dependencies]
 tonic-build = "0.10.0"

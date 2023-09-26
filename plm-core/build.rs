@@ -11,6 +11,8 @@ pub(crate) fn main() -> Result<(), Box<dyn std::error::Error>> {
                 "../protos/plm/registry/v1/storage.proto",
                 "../protos/plm/registry/v1/registry.proto",
                 "../protos/plm/library/v1/library.proto",
+                "../protos/plm/user/v1/user.proto",
+                "../protos/plm/organization/v1/organization.proto",
             ],
             &["../protos"],
         )?;

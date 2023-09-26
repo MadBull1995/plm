@@ -4,6 +4,7 @@ use std::io::{self, BufRead, BufReader, Read, Write};
 use std::path::{Path, PathBuf};
 
 use serde::Serialize;
+use tracing::trace;
 
 struct TabDelimited;
 
@@ -21,7 +22,6 @@ use std::collections::HashMap;
 use crate::Manifest;
 
 impl FileSystem {
-
     /// Checks if a directory exists at the given path
     pub fn dir_exists(dir_path: &str) -> bool {
         Path::new(dir_path).is_dir()
@@ -33,15 +33,18 @@ impl FileSystem {
     }
 
     pub fn create_dir(dir_path: &str) -> io::Result<()> {
+        trace!("creating dir: {}", dir_path);
         fs::create_dir_all(dir_path)
     }
 
     pub fn write_file(file_path: &str, contents: &str) -> io::Result<()> {
+        trace!("writing file: {}", file_path);
         let mut file = File::create(file_path)?;
         file.write_all(contents.as_bytes())
     }
 
     pub fn read_file(file_path: &str) -> io::Result<String> {
+        trace!("reading file: {}", file_path);
         let mut file = File::open(file_path)?;
         let mut contents = String::new();
         file.read_to_string(&mut contents)?;
@@ -97,10 +100,12 @@ impl FileSystem {
     }
 
     pub fn delete_file(file_path: &str) -> io::Result<()> {
+        trace!("removing file: {}", file_path);
         fs::remove_file(file_path)
     }
 
     pub fn read_manifest(file_path: &str) -> io::Result<Manifest> {
+        trace!("reading proto-package.json file: {}", file_path);
         let content = Self::read_file(file_path)?;
         let result: Result<Manifest, serde_json::Error> = serde_json::from_str(&content);
         match result {
@@ -110,7 +115,7 @@ impl FileSystem {
     }
 
     pub fn write_json<T: Serialize>(file_path: &str, value: &T) -> io::Result<()> {
-        // let json = serde_json::to_value(value)?;
+        trace!("writing .json file: {}", file_path);
         let string = serde_json::to_string_pretty(&value)?;
         let mut file = File::create(file_path)?;
         file.write_all(string.as_bytes())?;
@@ -118,6 +123,7 @@ impl FileSystem {
     }
 
     pub fn write_yaml<T: Serialize>(file_path: &str, value: &T) -> io::Result<()> {
+        trace!("writing .yaml file: {}", file_path);
         let yaml_string = serde_yaml::to_string(value)
             .map_err(|e| io::Error::new(io::ErrorKind::Other, e.to_string()))?;
         let mut file = File::create(file_path)?;
@@ -186,17 +192,17 @@ impl FileSystem {
     }
 
     pub fn copy_file(src_path: &Path, dest_path: &Path) -> io::Result<()> {
-        println!("{:?}->{:?}", src_path, dest_path);
+        trace!("copying file from: {:?}, to: {:?}", src_path, dest_path);
 
         // Open the source file for reading
         let mut src_file = File::open(src_path)?;
-    
+
         // Create or truncate the destination file for writing
         let mut dest_file = File::create(dest_path)?;
-    
+
         // Allocate a buffer to hold file data
         let mut buffer = vec![0; 4096];
-    
+
         // Read from source and write to destination
         loop {
             let bytes_read = src_file.read(&mut buffer)?;
@@ -205,7 +211,7 @@ impl FileSystem {
             }
             dest_file.write_all(&buffer[0..bytes_read])?;
         }
-    
+
         Ok(())
     }
 }

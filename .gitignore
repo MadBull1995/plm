@@ -1,3 +1,4 @@
 /target
 /data/postgres
 /data/registry/libs
+/data/seed

@@ -1,0 +1,17 @@
+{
+    "server": {
+        "port": 7575,
+        "host": "[::]",
+        "logLevel": 1
+    },
+    "storage": {
+        "local": {
+            "registryPath": "/registry/libs"
+        }
+    },
+    "data": {
+        "host": "db:5432",
+        "username": "admin",
+        "password": "password"
+    }
+}

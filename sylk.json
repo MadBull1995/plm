@@ -24,6 +24,373 @@
         }
     },
     "packages": {
+        "plm/package/v1": {
+            "name": "package",
+            "package": "plm.package.v1",
+            "messages": [
+                {
+                    "name": "Package",
+                    "fullName": "plm.package.v1.Package",
+                    "fields": [
+                        {
+                            "name": "name",
+                            "fullName": "plm.package.v1.Package.name",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        },
+                        {
+                            "name": "version",
+                            "fullName": "plm.package.v1.Package.version",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 2
+                        },
+                        {
+                            "name": "files",
+                            "fullName": "plm.package.v1.Package.files",
+                            "fieldType": "TYPE_MESSAGE",
+                            "label": "LABEL_REPEATED",
+                            "messageType": "plm.package.v1.File",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 3
+                        },
+                        {
+                            "name": "metadata",
+                            "fullName": "plm.package.v1.Package.metadata",
+                            "fieldType": "TYPE_MAP",
+                            "label": "LABEL_OPTIONAL",
+                            "keyType": "TYPE_STRING",
+                            "valueType": "TYPE_STRING",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 4
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message",
+                    "tag": "package"
+                },
+                {
+                    "name": "File",
+                    "fullName": "plm.package.v1.File",
+                    "fields": [
+                        {
+                            "name": "name",
+                            "fullName": "plm.package.v1.File.name",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        },
+                        {
+                            "name": "content",
+                            "fullName": "plm.package.v1.File.content",
+                            "fieldType": "TYPE_BYTES",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 2
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message",
+                    "tag": "package"
+                },
+                {
+                    "name": "LockedDependency",
+                    "fullName": "plm.package.v1.LockedDependency",
+                    "description": "LockedDependency contains locked-down information about a dependency.",
+                    "fields": [
+                        {
+                            "name": "locked_version",
+                            "fullName": "plm.package.v1.LockedDependency.locked_version",
+                            "description": "The locked version of the dependency.",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        },
+                        {
+                            "name": "source",
+                            "fullName": "plm.package.v1.LockedDependency.source",
+                            "description": "The source from which this package version comes (e.g., URL or file path).",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 2
+                        },
+                        {
+                            "name": "checksum",
+                            "fullName": "plm.package.v1.LockedDependency.checksum",
+                            "description": "Optional checksum for package integrity verification.",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 3
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message",
+                    "tag": "lock"
+                },
+                {
+                    "name": "LockFile",
+                    "fullName": "plm.package.v1.LockFile",
+                    "description": "LockFile holds the locked-down versions of dependencies.",
+                    "fields": [
+                        {
+                            "name": "locked_dependencies",
+                            "fullName": "plm.package.v1.LockFile.locked_dependencies",
+                            "description": "A map of package names to their locked versions and sources.",
+                            "fieldType": "TYPE_MAP",
+                            "label": "LABEL_OPTIONAL",
+                            "keyType": "TYPE_STRING",
+                            "valueType": "TYPE_MESSAGE",
+                            "messageType": "plm.package.v1.LockedDependency",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        },
+                        {
+                            "name": "integrity_hash",
+                            "fullName": "plm.package.v1.LockFile.integrity_hash",
+                            "description": "A hash or checksum for integrity verification, if applicable.",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 2
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message",
+                    "tag": "lock"
+                },
+                {
+                    "name": "Manifest",
+                    "fullName": "plm.package.v1.Manifest",
+                    "description": "Manifest holds the metadata for a Protobuf package in the registry.",
+                    "fields": [
+                        {
+                            "name": "name",
+                            "fullName": "plm.package.v1.Manifest.name",
+                            "description": "Name of the package.",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        },
+                        {
+                            "name": "version",
+                            "fullName": "plm.package.v1.Manifest.version",
+                            "description": "Version of the package.",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 2
+                        },
+                        {
+                            "name": "description",
+                            "fullName": "plm.package.v1.Manifest.description",
+                            "description": "A brief description of the package.",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 3
+                        },
+                        {
+                            "name": "src_dir",
+                            "fullName": "plm.package.v1.Manifest.src_dir",
+                            "description": "Points to a directory within your project where the .proto files are stored",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 4
+                        },
+                        {
+                            "name": "repository_url",
+                            "fullName": "plm.package.v1.Manifest.repository_url",
+                            "description": "The repository URL where the package source can be found.",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 5
+                        },
+                        {
+                            "name": "license",
+                            "fullName": "plm.package.v1.Manifest.license",
+                            "description": "License under which the package is distributed.",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 6
+                        },
+                        {
+                            "name": "authors",
+                            "fullName": "plm.package.v1.Manifest.authors",
+                            "description": "Names of the authors or maintainers.",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_REPEATED",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 7
+                        },
+                        {
+                            "name": "exclue",
+                            "fullName": "plm.package.v1.Manifest.exclue",
+                            "description": "Exclude list of directories.",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_REPEATED",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 8
+                        },
+                        {
+                            "name": "dependencies",
+                            "fullName": "plm.package.v1.Manifest.dependencies",
+                            "description": "List of dependencies.",
+                            "fieldType": "TYPE_MAP",
+                            "label": "LABEL_OPTIONAL",
+                            "keyType": "TYPE_STRING",
+                            "valueType": "TYPE_STRING",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 9
+                        },
+                        {
+                            "name": "metadata",
+                            "fullName": "plm.package.v1.Manifest.metadata",
+                            "description": "Custom metadata in key-value pairs.",
+                            "fieldType": "TYPE_MAP",
+                            "label": "LABEL_OPTIONAL",
+                            "keyType": "TYPE_STRING",
+                            "valueType": "TYPE_STRING",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 10
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message",
+                    "tag": "manifest"
+                }
+            ],
+            "dependencies": [
+                "plm.package.v1.Package",
+                "plm.package.v1.LockFile",
+                "plm.package.v1.Manifest"
+            ]
+        },
+        "plm/library/v1": {
+            "name": "library",
+            "package": "plm.library.v1",
+            "messages": [
+                {
+                    "name": "Library",
+                    "fullName": "plm.library.v1.Library",
+                    "fields": [
+                        {
+                            "name": "name",
+                            "fullName": "plm.library.v1.Library.name",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        },
+                        {
+                            "name": "version",
+                            "fullName": "plm.library.v1.Library.version",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 2
+                        },
+                        {
+                            "name": "packages",
+                            "fullName": "plm.library.v1.Library.packages",
+                            "fieldType": "TYPE_MESSAGE",
+                            "label": "LABEL_REPEATED",
+                            "messageType": "plm.package.v1.Package",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 3
+                        },
+                        {
+                            "name": "metadata",
+                            "fullName": "plm.library.v1.Library.metadata",
+                            "fieldType": "TYPE_MAP",
+                            "label": "LABEL_OPTIONAL",
+                            "keyType": "TYPE_STRING",
+                            "valueType": "TYPE_STRING",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 4
+                        },
+                        {
+                            "name": "fd_set",
+                            "fullName": "plm.library.v1.Library.fd_set",
+                            "fieldType": "TYPE_BYTES",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 5
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message",
+                    "tag": "library"
+                },
+                {
+                    "name": "Dependency",
+                    "fullName": "plm.library.v1.Dependency",
+                    "fields": [
+                        {
+                            "name": "library_id",
+                            "fullName": "plm.library.v1.Dependency.library_id",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        },
+                        {
+                            "name": "version",
+                            "fullName": "plm.library.v1.Dependency.version",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 2
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message",
+                    "tag": "library"
+                }
+            ],
+            "dependencies": [
+                "plm.package.v1",
+                "plm.library.v1.Library"
+            ]
+        },
         "plm/registry/v1": {
             "name": "registry",
             "package": "plm.registry.v1",
@@ -77,7 +444,7 @@
                             "label": "LABEL_OPTIONAL",
                             "type": "descriptor",
                             "kind": "field",
-                            "index": 2,
+                            "index": 1,
                             "oneofFields": [
                                 {
                                     "name": "local",
@@ -86,7 +453,7 @@
                                     "label": "LABEL_OPTIONAL",
                                     "messageType": "plm.registry.v1.Local",
                                     "index": 1,
-                                    "kind": "oneof"
+                                    "kind": "field"
                                 },
                                 {
                                     "name": "s3",
@@ -95,7 +462,7 @@
                                     "label": "LABEL_OPTIONAL",
                                     "messageType": "plm.registry.v1.S3",
                                     "index": 2,
-                                    "kind": "oneof"
+                                    "kind": "field"
                                 }
                             ]
                         }
@@ -125,11 +492,55 @@
                             "type": "descriptor",
                             "kind": "field",
                             "index": 2
+                        },
+                        {
+                            "name": "log_level",
+                            "fullName": "plm.registry.v1.Server.log_level",
+                            "fieldType": "TYPE_ENUM",
+                            "label": "LABEL_OPTIONAL",
+                            "enumType": "plm.registry.v1.Server.LogLevel",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 3
                         }
                     ],
                     "type": "descriptor",
                     "kind": "message",
-                    "tag": "server"
+                    "tag": "server",
+                    "inlines": [
+                        {
+                            "@type": "type.googleapis.com/sylk.SylkEnum.v2.SylkEnum",
+                            "name": "LogLevel",
+                            "fullName": "plm.registry.v1.Server.LogLevel",
+                            "values": [
+                                {
+                                    "name": "INFO",
+                                    "fullName": "plm.registry.v1.Server.LogLevel.INFO",
+                                    "type": "descriptor",
+                                    "kind": "enum_value"
+                                },
+                                {
+                                    "name": "DEBUG",
+                                    "fullName": "plm.registry.v1.Server.LogLevel.DEBUG",
+                                    "index": 1,
+                                    "number": 1,
+                                    "type": "descriptor",
+                                    "kind": "enum_value"
+                                },
+                                {
+                                    "name": "TRACE",
+                                    "fullName": "plm.registry.v1.Server.LogLevel.TRACE",
+                                    "index": 2,
+                                    "number": 2,
+                                    "type": "descriptor",
+                                    "kind": "enum_value"
+                                }
+                            ],
+                            "type": "descriptor",
+                            "kind": "enum",
+                            "tag": "server"
+                        }
+                    ]
                 },
                 {
                     "name": "Data",
@@ -315,6 +726,24 @@
                     ],
                     "type": "descriptor",
                     "kind": "message"
+                },
+                {
+                    "name": "PublishRequest",
+                    "fullName": "plm.registry.v1.PublishRequest",
+                    "fields": [
+                        {
+                            "name": "lib",
+                            "fullName": "plm.registry.v1.PublishRequest.lib",
+                            "fieldType": "TYPE_MESSAGE",
+                            "label": "LABEL_OPTIONAL",
+                            "messageType": "plm.library.v1.Library",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message"
                 }
             ],
             "enums": [
@@ -342,10 +771,14 @@
                 }
             ],
             "type": "package",
+            "dependencies": [
+                "plm.library.v1",
+                "google.protobuf"
+            ],
             "extensions": {
                 "files": {
                     "registry": {},
-                    "storage": {}
+                    "server": {}
                 }
             },
             "services": [
@@ -355,33 +788,242 @@
                     "methods": [
                         {
                             "name": "Download",
-                            "fullName": "plm.registry.v1.RegistryService.Download",
                             "inputType": "plm.registry.v1.DownloadRequest",
-                            "outputType": "plm.registry.v1.DownloadResponse",
+                            "outputType": "plm.registry.v1.DownloadResponse"
+                        },
+                        {
+                            "name": "Publish",
+                            "fullName": "plm.registry.v1.RegistryService.Publish",
+                            "inputType": "plm.registry.v1.PublishRequest",
+                            "outputType": "google.protobuf.Empty",
+                            "type": "descriptor",
+                            "kind": "method"
+                        }
+                    ],
+                    "tag": "registry"
+                }
+            ]
+        },
+        "plm/user/v1": {
+            "name": "user",
+            "package": "plm.user.v1",
+            "messages": [
+                {
+                    "name": "User",
+                    "fullName": "plm.user.v1.User",
+                    "fields": [
+                        {
+                            "name": "user_id",
+                            "fullName": "plm.user.v1.User.user_id",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        },
+                        {
+                            "name": "username",
+                            "fullName": "plm.user.v1.User.username",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 2
+                        },
+                        {
+                            "name": "email",
+                            "fullName": "plm.user.v1.User.email",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 3
+                        },
+                        {
+                            "name": "role",
+                            "fullName": "plm.user.v1.User.role",
+                            "description": "Should be non 0 when user is associated with organization",
+                            "fieldType": "TYPE_ENUM",
+                            "label": "LABEL_OPTIONAL",
+                            "enumType": "plm.user.v1.Role",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 4
+                        },
+                        {
+                            "name": "created_at",
+                            "fullName": "plm.user.v1.User.created_at",
+                            "fieldType": "TYPE_MESSAGE",
+                            "label": "LABEL_OPTIONAL",
+                            "messageType": "google.protobuf.Timestamp",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 5
+                        },
+                        {
+                            "name": "updated_at",
+                            "fullName": "plm.user.v1.User.updated_at",
+                            "fieldType": "TYPE_MESSAGE",
+                            "label": "LABEL_OPTIONAL",
+                            "messageType": "google.protobuf.Timestamp",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 6
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message",
+                    "tag": "user"
+                },
+                {
+                    "name": "LoginRequest",
+                    "fullName": "plm.user.v1.LoginRequest",
+                    "fields": [
+                        {
+                            "name": "username",
+                            "fullName": "plm.user.v1.LoginRequest.username",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        },
+                        {
+                            "name": "token",
+                            "fullName": "plm.user.v1.LoginRequest.token",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 2
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message"
+                },
+                {
+                    "name": "CreateUserRequest",
+                    "fullName": "plm.user.v1.CreateUserRequest",
+                    "fields": [
+                        {
+                            "name": "username",
+                            "fullName": "plm.user.v1.CreateUserRequest.username",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        },
+                        {
+                            "name": "password",
+                            "fullName": "plm.user.v1.CreateUserRequest.password",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 2
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message"
+                },
+                {
+                    "name": "LoginResponse",
+                    "fullName": "plm.user.v1.LoginResponse",
+                    "fields": [
+                        {
+                            "name": "token",
+                            "fullName": "plm.user.v1.LoginResponse.token",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message"
+                }
+            ],
+            "enums": [
+                {
+                    "name": "Role",
+                    "fullName": "plm.user.v1.Role",
+                    "values": [
+                        {
+                            "name": "UNKNOWN_ROLE",
+                            "fullName": "plm.user.v1.Role.UNKNOWN_ROLE",
+                            "type": "descriptor",
+                            "kind": "enum_value"
+                        },
+                        {
+                            "name": "ADMIN",
+                            "fullName": "plm.user.v1.Role.ADMIN",
+                            "index": 1,
+                            "number": 1,
+                            "type": "descriptor",
+                            "kind": "enum_value"
+                        },
+                        {
+                            "name": "CONTRIBUTER",
+                            "fullName": "plm.user.v1.Role.CONTRIBUTER",
+                            "index": 2,
+                            "number": 2,
+                            "type": "descriptor",
+                            "kind": "enum_value"
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "enum"
+                }
+            ],
+            "type": "package",
+            "dependencies": [
+                "google.protobuf",
+                "google.protobuf"
+            ],
+            "extensions": {
+                "files": {
+                    "user": {}
+                }
+            },
+            "services": [
+                {
+                    "name": "UserService",
+                    "fullName": "plm.user.v1.UserService",
+                    "methods": [
+                        {
+                            "name": "CreateUser",
+                            "fullName": "plm.user.v1.UserService.CreateUser",
+                            "inputType": "plm.user.v1.CreateUserRequest",
+                            "outputType": "plm.user.v1.User",
+                            "type": "descriptor",
+                            "kind": "method"
+                        },
+                        {
+                            "name": "Login",
+                            "fullName": "plm.user.v1.UserService.Login",
+                            "inputType": "plm.user.v1.LoginRequest",
+                            "outputType": "plm.user.v1.LoginResponse",
                             "type": "descriptor",
                             "kind": "method"
                         }
                     ],
                     "type": "service"
                 }
-            ],
-            "dependencies": [
-                "plm.library.v1"
             ]
         },
-        "plm/package/v1": {
-            "name": "package",
-            "package": "plm.package.v1",
+        "plm/organization/v1": {
+            "name": "organization",
+            "package": "plm.organization.v1",
             "messages": [
                 {
-                    "name": "LockedDependency",
-                    "fullName": "plm.package.v1.LockedDependency",
-                    "description": "LockedDependency contains locked-down information about a dependency.",
+                    "name": "Organization",
+                    "fullName": "plm.organization.v1.Organization",
                     "fields": [
                         {
-                            "name": "locked_version",
-                            "fullName": "plm.package.v1.LockedDependency.locked_version",
-                            "description": "The locked version of the dependency.",
+                            "name": "org_id",
+                            "fullName": "plm.organization.v1.Organization.org_id",
                             "fieldType": "TYPE_STRING",
                             "label": "LABEL_OPTIONAL",
                             "type": "descriptor",
@@ -389,221 +1031,120 @@
                             "index": 1
                         },
                         {
-                            "name": "source",
-                            "fullName": "plm.package.v1.LockedDependency.source",
-                            "description": "The source from which this package version comes (e.g., URL or file path).",
-                            "fieldType": "TYPE_STRING",
-                            "label": "LABEL_OPTIONAL",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 2
-                        },
-                        {
-                            "name": "checksum",
-                            "fullName": "plm.package.v1.LockedDependency.checksum",
-                            "description": "Optional checksum for package integrity verification.",
-                            "fieldType": "TYPE_STRING",
-                            "label": "LABEL_OPTIONAL",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 3
-                        }
-                    ],
-                    "type": "descriptor",
-                    "kind": "message",
-                    "tag": "lock"
-                },
-                {
-                    "name": "LockFile",
-                    "fullName": "plm.package.v1.LockFile",
-                    "description": "LockFile holds the locked-down versions of dependencies.",
-                    "fields": [
-                        {
-                            "name": "locked_dependencies",
-                            "fullName": "plm.package.v1.LockFile.locked_dependencies",
-                            "description": "A map of package names to their locked versions and sources.",
-                            "fieldType": "TYPE_MAP",
-                            "label": "LABEL_OPTIONAL",
-                            "keyType": "TYPE_STRING",
-                            "valueType": "TYPE_MESSAGE",
-                            "messageType": "plm.package.v1.LockedDependency",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 1
-                        },
-                        {
-                            "name": "integrity_hash",
-                            "fullName": "plm.package.v1.LockFile.integrity_hash",
-                            "description": "A hash or checksum for integrity verification, if applicable.",
-                            "fieldType": "TYPE_STRING",
-                            "label": "LABEL_OPTIONAL",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 2
-                        }
-                    ],
-                    "type": "descriptor",
-                    "kind": "message",
-                    "tag": "lock"
-                },
-                {
-                    "name": "Manifest",
-                    "fullName": "plm.package.v1.Manifest",
-                    "description": "Manifest holds the metadata for a Protobuf package in the registry.",
-                    "fields": [
-                        {
-                            "name": "name",
-                            "fullName": "plm.package.v1.Manifest.name",
-                            "description": "Name of the package.",
-                            "fieldType": "TYPE_STRING",
-                            "label": "LABEL_OPTIONAL",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 1
-                        },
-                        {
-                            "name": "version",
-                            "fullName": "plm.package.v1.Manifest.version",
-                            "description": "Version of the package.",
-                            "fieldType": "TYPE_STRING",
-                            "label": "LABEL_OPTIONAL",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 2
-                        },
-                        {
-                            "name": "description",
-                            "fullName": "plm.package.v1.Manifest.description",
-                            "description": "A brief description of the package.",
-                            "fieldType": "TYPE_STRING",
-                            "label": "LABEL_OPTIONAL",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 3
-                        },
-                        {
-                            "name": "src_dir",
-                            "fullName": "plm.package.v1.Manifest.src_dir",
-                            "description": "Points to a directory within your project where the .proto files are stored",
-                            "fieldType": "TYPE_STRING",
-                            "label": "LABEL_OPTIONAL",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 4
-                        },
-                        {
-                            "name": "repository_url",
-                            "fullName": "plm.package.v1.Manifest.repository_url",
-                            "description": "The repository URL where the package source can be found.",
-                            "fieldType": "TYPE_STRING",
-                            "label": "LABEL_OPTIONAL",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 5
-                        },
-                        {
-                            "name": "license",
-                            "fullName": "plm.package.v1.Manifest.license",
-                            "description": "License under which the package is distributed.",
-                            "fieldType": "TYPE_STRING",
-                            "label": "LABEL_OPTIONAL",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 6
-                        },
-                        {
-                            "name": "authors",
-                            "fullName": "plm.package.v1.Manifest.authors",
-                            "description": "Names of the authors or maintainers.",
-                            "fieldType": "TYPE_STRING",
-                            "label": "LABEL_REPEATED",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 7
-                        },
-                        {
-                            "name": "dependencies",
-                            "fullName": "plm.package.v1.Manifest.dependencies",
-                            "description": "List of dependencies.",
-                            "fieldType": "TYPE_MAP",
-                            "label": "LABEL_OPTIONAL",
-                            "keyType": "TYPE_STRING",
-                            "valueType": "TYPE_STRING",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 8
-                        },
-                        {
-                            "name": "metadata",
-                            "fullName": "plm.package.v1.Manifest.metadata",
-                            "description": "Custom metadata in key-value pairs.",
-                            "fieldType": "TYPE_MAP",
-                            "label": "LABEL_OPTIONAL",
-                            "keyType": "TYPE_STRING",
-                            "valueType": "TYPE_STRING",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 9
-                        }
-                    ],
-                    "type": "descriptor",
-                    "kind": "message",
-                    "tag": "manifest"
-                },
-                {
-                    "name": "Package",
-                    "fullName": "plm.package.v1.Package",
-                    "fields": [
-                        {
-                            "name": "name",
-                            "fullName": "plm.package.v1.Package.name",
-                            "fieldType": "TYPE_STRING",
-                            "label": "LABEL_OPTIONAL",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 1
-                        },
-                        {
-                            "name": "version",
-                            "fullName": "plm.package.v1.Package.version",
-                            "fieldType": "TYPE_STRING",
-                            "label": "LABEL_OPTIONAL",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 2
-                        },
-                        {
-                            "name": "files",
-                            "fullName": "plm.package.v1.Package.files",
+                            "name": "users",
+                            "fullName": "plm.organization.v1.Organization.users",
                             "fieldType": "TYPE_MESSAGE",
                             "label": "LABEL_REPEATED",
-                            "messageType": "plm.package.v1.File",
+                            "messageType": "plm.user.v1.User",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 2
+                        },
+                        {
+                            "name": "created_at",
+                            "fullName": "plm.organization.v1.Organization.created_at",
+                            "fieldType": "TYPE_MESSAGE",
+                            "label": "LABEL_OPTIONAL",
+                            "messageType": "google.protobuf.Timestamp",
                             "type": "descriptor",
                             "kind": "field",
                             "index": 3
                         },
                         {
-                            "name": "metadata",
-                            "fullName": "plm.package.v1.Package.metadata",
-                            "fieldType": "TYPE_MAP",
+                            "name": "updated_at",
+                            "fullName": "plm.organization.v1.Organization.updated_at",
+                            "fieldType": "TYPE_MESSAGE",
                             "label": "LABEL_OPTIONAL",
-                            "keyType": "TYPE_STRING",
-                            "valueType": "TYPE_STRING",
+                            "messageType": "google.protobuf.Timestamp",
                             "type": "descriptor",
                             "kind": "field",
                             "index": 4
                         }
                     ],
                     "type": "descriptor",
-                    "kind": "message"
+                    "kind": "message",
+                    "tag": "organization"
                 },
                 {
-                    "name": "File",
-                    "fullName": "plm.package.v1.File",
+                    "name": "CreateOrganizationRequest",
+                    "fullName": "plm.organization.v1.CreateOrganizationRequest",
                     "fields": [
                         {
                             "name": "name",
-                            "fullName": "plm.package.v1.File.name",
+                            "fullName": "plm.organization.v1.CreateOrganizationRequest.name",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message",
+                    "tag": "organization"
+                },
+                {
+                    "name": "RemoveOrganizationRequest",
+                    "fullName": "plm.organization.v1.RemoveOrganizationRequest",
+                    "fields": [
+                        {
+                            "name": "org_id",
+                            "fullName": "plm.organization.v1.RemoveOrganizationRequest.org_id",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message",
+                    "tag": "organization"
+                },
+                {
+                    "name": "GetOrganizationRequest",
+                    "fullName": "plm.organization.v1.GetOrganizationRequest",
+                    "fields": [
+                        {
+                            "name": "org_id",
+                            "fullName": "plm.organization.v1.GetOrganizationRequest.org_id",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message",
+                    "tag": "organization"
+                },
+                {
+                    "name": "GetOrganizationResponse",
+                    "fullName": "plm.organization.v1.GetOrganizationResponse",
+                    "fields": [
+                        {
+                            "name": "organization",
+                            "fullName": "plm.organization.v1.GetOrganizationResponse.organization",
+                            "fieldType": "TYPE_MESSAGE",
+                            "label": "LABEL_OPTIONAL",
+                            "messageType": "plm.organization.v1.Organization",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message",
+                    "tag": "organization"
+                },
+                {
+                    "name": "AddUserRequest",
+                    "fullName": "plm.organization.v1.AddUserRequest",
+                    "fields": [
+                        {
+                            "name": "org_id",
+                            "fullName": "plm.organization.v1.AddUserRequest.org_id",
                             "fieldType": "TYPE_STRING",
                             "label": "LABEL_OPTIONAL",
                             "type": "descriptor",
@@ -611,9 +1152,46 @@
                             "index": 1
                         },
                         {
-                            "name": "content",
-                            "fullName": "plm.package.v1.File.content",
-                            "fieldType": "TYPE_BYTES",
+                            "name": "user_id",
+                            "fullName": "plm.organization.v1.AddUserRequest.user_id",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 2
+                        },
+                        {
+                            "name": "role",
+                            "fullName": "plm.organization.v1.AddUserRequest.role",
+                            "fieldType": "TYPE_ENUM",
+                            "label": "LABEL_OPTIONAL",
+                            "enumType": "plm.user.v1.Role",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 3
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message",
+                    "tag": "organization"
+                },
+                {
+                    "name": "RemoveUserRequest",
+                    "fullName": "plm.organization.v1.RemoveUserRequest",
+                    "fields": [
+                        {
+                            "name": "org_id",
+                            "fullName": "plm.organization.v1.RemoveUserRequest.org_id",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        },
+                        {
+                            "name": "user_id",
+                            "fullName": "plm.organization.v1.RemoveUserRequest.user_id",
+                            "fieldType": "TYPE_STRING",
                             "label": "LABEL_OPTIONAL",
                             "type": "descriptor",
                             "kind": "field",
@@ -622,26 +1200,14 @@
                     ],
                     "type": "descriptor",
                     "kind": "message"
-                }
-            ],
-            "type": "package",
-            "extensions": {
-                "files": {
-                    "package": {}
-                }
-            }
-        },
-        "plm/library/v1": {
-            "name": "library",
-            "package": "plm.library.v1",
-            "messages": [
+                },
                 {
-                    "name": "Library",
-                    "fullName": "plm.library.v1.Library",
+                    "name": "UpdateUserRoleRequest",
+                    "fullName": "plm.organization.v1.UpdateUserRoleRequest",
                     "fields": [
                         {
-                            "name": "name",
-                            "fullName": "plm.library.v1.Library.name",
+                            "name": "org_id",
+                            "fullName": "plm.organization.v1.UpdateUserRoleRequest.org_id",
                             "fieldType": "TYPE_STRING",
                             "label": "LABEL_OPTIONAL",
                             "type": "descriptor",
@@ -649,8 +1215,8 @@
                             "index": 1
                         },
                         {
-                            "name": "version",
-                            "fullName": "plm.library.v1.Library.version",
+                            "name": "user_id",
+                            "fullName": "plm.organization.v1.UpdateUserRoleRequest.user_id",
                             "fieldType": "TYPE_STRING",
                             "label": "LABEL_OPTIONAL",
                             "type": "descriptor",
@@ -658,34 +1224,14 @@
                             "index": 2
                         },
                         {
-                            "name": "packages",
-                            "fullName": "plm.library.v1.Library.packages",
-                            "fieldType": "TYPE_MESSAGE",
-                            "label": "LABEL_REPEATED",
-                            "messageType": "plm.package.v1.Package",
+                            "name": "role",
+                            "fullName": "plm.organization.v1.UpdateUserRoleRequest.role",
+                            "fieldType": "TYPE_ENUM",
+                            "label": "LABEL_OPTIONAL",
+                            "enumType": "plm.user.v1.Role",
                             "type": "descriptor",
                             "kind": "field",
                             "index": 3
-                        },
-                        {
-                            "name": "metadata",
-                            "fullName": "plm.library.v1.Library.metadata",
-                            "fieldType": "TYPE_MAP",
-                            "label": "LABEL_OPTIONAL",
-                            "keyType": "TYPE_STRING",
-                            "valueType": "TYPE_STRING",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 4
-                        },
-                        {
-                            "name": "fd_set",
-                            "fullName": "plm.library.v1.Library.fd_set",
-                            "fieldType": "TYPE_BYTES",
-                            "label": "LABEL_OPTIONAL",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 5
                         }
                     ],
                     "type": "descriptor",
@@ -694,13 +1240,72 @@
             ],
             "type": "package",
             "dependencies": [
-                "plm.package.v1"
+                "plm.user.v1",
+                "google.protobuf",
+                "google.protobuf"
             ],
             "extensions": {
                 "files": {
-                    "library": {}
+                    "organization": {}
                 }
-            }
+            },
+            "services": [
+                {
+                    "name": "OrganizationService",
+                    "fullName": "plm.organization.v1.OrganizationService",
+                    "methods": [
+                        {
+                            "name": "GetOrganization",
+                            "fullName": "plm.organization.v1.OrganizationService.GetOrganization",
+                            "inputType": "plm.organization.v1.GetOrganizationRequest",
+                            "outputType": "plm.organization.v1.GetOrganizationResponse",
+                            "type": "descriptor",
+                            "kind": "method"
+                        },
+                        {
+                            "name": "CreateOrganization",
+                            "fullName": "plm.organization.v1.OrganizationService.CreateOrganization",
+                            "inputType": "plm.organization.v1.CreateOrganizationRequest",
+                            "outputType": "plm.organization.v1.Organization",
+                            "type": "descriptor",
+                            "kind": "method"
+                        },
+                        {
+                            "name": "RemoveOrganization",
+                            "fullName": "plm.organization.v1.OrganizationService.RemoveOrganization",
+                            "inputType": "plm.organization.v1.RemoveOrganizationRequest",
+                            "outputType": "google.protobuf.Empty",
+                            "type": "descriptor",
+                            "kind": "method"
+                        },
+                        {
+                            "name": "AddUser",
+                            "fullName": "plm.organization.v1.OrganizationService.AddUser",
+                            "inputType": "plm.organization.v1.AddUserRequest",
+                            "outputType": "google.protobuf.Empty",
+                            "type": "descriptor",
+                            "kind": "method"
+                        },
+                        {
+                            "name": "RemoveUser",
+                            "fullName": "plm.organization.v1.OrganizationService.RemoveUser",
+                            "inputType": "plm.organization.v1.RemoveUserRequest",
+                            "outputType": "google.protobuf.Empty",
+                            "type": "descriptor",
+                            "kind": "method"
+                        },
+                        {
+                            "name": "UpdateUserRole",
+                            "fullName": "plm.organization.v1.OrganizationService.UpdateUserRole",
+                            "inputType": "plm.organization.v1.UpdateUserRoleRequest",
+                            "outputType": "google.protobuf.Empty",
+                            "type": "descriptor",
+                            "kind": "method"
+                        }
+                    ],
+                    "type": "service"
+                }
+            ]
         }
     }
 }

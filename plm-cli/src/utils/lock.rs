@@ -62,20 +62,25 @@ impl ProtoLock {
     }
 
     // Find a library by its name
-    pub fn find_library(&self, lib_name: &str) -> Option<&Library> {
-        self.libraries.iter().find(|&lib| lib.name == lib_name)
+    pub fn find_library(&self, lib_name: Option<String>) -> Option<&Library> {
+        if lib_name.is_some() {
+            self.libraries
+                .iter()
+                .find(|&lib| lib.name == lib_name.clone().unwrap().as_str())
+        } else {
+            None
+        }
     }
 
     // Resolve a library's dependencies recursively
-    pub fn resolve_dependencies(&self, lib_name: &str) -> PlmResult<Vec<Dependency>> {
-        // Implement your logic here to resolve dependencies. You may use your DAG algorithm.
-        // If the dependency can't be resolved, return an Error.
+    pub fn resolve_dependencies(&self, lib_name: String) -> PlmResult<Vec<Dependency>> {
+        
         Ok(Vec::new()) // Placeholder
     }
 
     // Validate the entire lock file, e.g., for cyclic dependencies
     pub fn validate(&self) -> PlmResult<()> {
-        // Implement your DAG-based validation logic here
+        
         Ok(()) // Placeholder
     }
 }

@@ -1,8 +1,11 @@
-use std::{path::PathBuf, collections::HashMap, env};
+use std::{collections::HashMap, env, path::PathBuf};
 
-use plm_core::FileSystem;
+use plm_core::{FileSystem, Config};
 
-use super::{errors::{PlmResult, PlmError}, prompter::Prompter};
+use super::{
+    errors::{PlmError, PlmResult},
+    prompter::Prompter,
+};
 
 pub struct CliConfigBuilder {}
 
@@ -14,6 +17,14 @@ pub struct CliConfigs {
     pub username: Option<String>,
     pub password: Option<String>,
     pub registry: String,
+    pub token: Option<String>,
+}
+
+#[derive(Debug, serde::Deserialize, serde::Serialize)]
+pub struct DotPlmRC {
+    pub registry: String,
+    pub username: Option<String>,
+    pub token: Option<String>,
 }
 
 impl CliConfigs {
@@ -23,22 +34,40 @@ impl CliConfigs {
             username: None,
             password: None,
             registry: DEFAULT_REGISTRY.to_string(),
+            token: None
         }
     }
 
+    pub fn to_json(&self) {
+
+        let d = DotPlmRC {
+            registry: self.registry.clone(),
+            token: self.token.clone(),
+            username:self.username.clone()
+        };
+
+        println!("{}", serde_json::to_string_pretty(&d).unwrap());
+    }
+
     pub fn write_plmrc_file(&self) -> PlmResult<()> {
-        let content = format!("registry={}\nusername={}\npassword={}",
+        let content = format!(
+            "registry={}\nusername={}\ntoken={}",
             self.registry,
             self.username.clone().unwrap_or_else(|| "".to_string()),
-            self.password.clone().unwrap_or_else(|| "".to_string())
+            self.token.clone().unwrap_or_else(|| "".to_string()),
         );
-        FileSystem::write_file(FileSystem::join_paths(FileSystem::get_home_directory().unwrap(), ".plmrc").to_str().unwrap(), &content)
-            .map_err(|err| PlmError::FileSystemError(err))
+        FileSystem::write_file(
+            FileSystem::join_paths(FileSystem::get_home_directory().unwrap(), ".plmrc")
+                .to_str()
+                .unwrap(),
+            &content,
+        )
+        .map_err(|err| PlmError::FileSystemError(err))
     }
 
     pub fn load_plmrc_files(&mut self) -> PlmResult<()> {
-        let mut overrides: Option<HashMap<String,String>> = None;
-        
+        let mut overrides: Option<HashMap<String, String>> = None;
+
         let global = FileSystem::parse_plmrc_file(true);
 
         match global {
@@ -49,32 +78,47 @@ impl CliConfigs {
             }
             Ok(g) => {
                 overrides = Some(g);
-            },
-        }
-    
-        let local = FileSystem::parse_plmrc_file(false);
-
-        match local {
-            Err(_) => {},
-            Ok(plmrc) => {
-                dbg!(plmrc);
             }
         }
 
         match overrides {
-            None => {
-
-            },
+            None => {}
             Some(plmrc) => {
+                Prompter::verbose("reading global configs: ~/.plmrc");
                 for k in plmrc.keys() {
                     if k == "username" {
                         self.username = Some(plmrc.get(k).unwrap().to_string());
                     } else if k == "password" {
                         self.password = Some(plmrc.get(k).unwrap().to_string());
+                    } else if k == "registry" {
+                        self.registry = plmrc.get(k).unwrap().to_string();
+                    } else if k == "token" {
+                        self.token = Some(plmrc.get(k).unwrap().to_string());
+                    } else {
+                        Prompter::warning(&format!("key: {} is not supported on .plmrc config file", k))
                     }
                 }
             }
         }
+
+        let local = FileSystem::parse_plmrc_file(false);
+
+        match local {
+            Err(_) => {}
+            Ok(plmrc) => {
+                Prompter::verbose("found local project .plmrc file, going to override global ~/.plmrc");
+                for k in plmrc.keys() {
+                    if k == "username" {
+                        self.username = Some(plmrc.get(k).unwrap().to_string());
+                    } else if k == "password" {
+                        self.password = Some(plmrc.get(k).unwrap().to_string());
+                    } else if k == "registry" {
+                        self.registry = plmrc.get(k).unwrap().to_string();
+                    }
+                }
+            }
+        }
+
         Ok(())
     }
 }

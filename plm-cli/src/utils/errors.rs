@@ -1,5 +1,5 @@
 use std::io;
-pub type PlmResult<T> = Result<T, PlmError>;
+pub type PlmResult<T> = anyhow::Result<T, PlmError>;
 
 #[derive(thiserror::Error, Debug)]
 pub enum PlmError {
