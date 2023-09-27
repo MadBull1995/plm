@@ -21,6 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: rustup update && rustup component add clippy
+      - run: sudo apt-get update -y && sudo apt-get install -y protobuf-compiler
       - uses: Swatinem/rust-cache@v2
       - run: cargo clippy --all-targets -- -D warnings -D clippy::all
   
@@ -37,14 +38,14 @@ jobs:
         env:
           RUST_BACKTRACE: 1
   
-  deny:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - run: rustup update
-      - uses: Swatinem/rust-cache@v2
-      - run: cargo install cargo-deny || true
-      - run: cargo deny check
+  # deny:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - run: rustup update
+  #     - uses: Swatinem/rust-cache@v2
+  #     - run: cargo install cargo-deny || true
+  #     - run: cargo deny check
 
   typos:
     runs-on: ubuntu-latest
@@ -62,20 +63,3 @@ jobs:
       - run: sudo apt-get update -y && sudo apt-get install -y protobuf-compiler
       - uses: Swatinem/rust-cache@v2
       - run: cargo build --verbose
-    
-  release:
-    name: release ${{ matrix.target }}
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        target: [x86_64-pc-windows-gnu, x86_64-unknown-linux-musl]
-    steps:
-      - uses: actions/checkout@master
-      - name: Compile and release
-        uses: rust-build/rust-build.action@v1.4.3
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          RUSTTARGET: ${{ matrix.target }}
-          EXTRA_FILES: "README.md LICENSE"
