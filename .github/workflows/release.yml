@@ -95,12 +95,12 @@ jobs:
     - name: Install packages (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
       run: |
-        ci/ubuntu-install-packages
+        ci/ubuntu-install-packages.sh
 
     - name: Install packages (macOS)
       if: matrix.os == 'macos-latest'
       run: |
-        ci/macos-install-packages
+        ci/macos-install-packages.sh
 
     - name: Install Rust
       uses: dtolnay/rust-toolchain@master
@@ -141,7 +141,7 @@ jobs:
     - name: Build archive
       shell: bash
       run: |
-        outdir="$(ci/cargo-out-dir "${{ env.TARGET_DIR }}")"
+        outdir="$(ci/cargo-out-dir.sh "${{ env.TARGET_DIR }}")"
         staging="plm-cli-${{ needs.create-release.outputs.plm_version }}-${{ matrix.target }}"
         mkdir -p "$staging"/{complete,doc}
 
