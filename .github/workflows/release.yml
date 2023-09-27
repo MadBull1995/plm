@@ -41,7 +41,7 @@ jobs:
       - name: Create GitHub release
         run: gh release create ${{ env.PLM_VERSION }}
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PLM_PAT }}
 
   build-release:
     name: build-release
@@ -168,5 +168,5 @@ jobs:
 
     - name: Upload release archive
       env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_TOKEN: ${{ secrets.PLM_PAT }}
       run: gh release upload ${{ needs.create-release.outputs.plm_version }} ${{ env.ASSET }} ${{ env.ASSET_SUM }}
