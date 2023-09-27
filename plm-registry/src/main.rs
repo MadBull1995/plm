@@ -1,22 +1,32 @@
+// Copyright 2023 Sylk Technologies
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 // Std libs
 use ::tracing::debug;
 use plm_core::Config;
-use std::{collections::HashSet, env};
+use std::env;
 // Own libs
 use plm_registry::{
-    api,
     config::ConfigBuilder,
-    data,
     psql::{establish_connection, initialize_schema},
+    storage::RegistryStorage,
     tracing::setup_tracing,
-    // psql::{establish_connection, initialize_schema},
     types::RegistryResult,
-    utils::{auth, error, tracing},
     DataBuilder,
     RegistryServer,
     RegistryServerBuilder,
-    StorageBuilder, local::LocalStorage,
-    storage::RegistryStorage
+    StorageBuilder,
 };
 
 #[tokio::main]
@@ -26,22 +36,19 @@ async fn main() -> RegistryResult<()> {
     let config = setup_configs(&mut configs)?;
     setup_tracing(&(config.clone().server.unwrap().log_level as u8));
     let mut storage = StorageBuilder::new();
+    #[allow(unused_assignments)]
     let mut store_path = None;
     match config.storage.unwrap().storage_backend {
-        None => {
-            store_path = Some("plm_registry".to_string())
-        },
-        Some(storgae_backend) => {
-            match storgae_backend {
-                plm_core::plm::registry::v1::storage::StorageBackend::Local(local) => {
-                    let path = local.registry_path.clone();
-                    store_path = Some(path)
-                }
-                plm_core::plm::registry::v1::storage::StorageBackend::S3(remote) => {
-                    todo!()
-                }
+        None => store_path = Some("plm_registry".to_string()),
+        Some(storgae_backend) => match storgae_backend {
+            plm_core::plm::registry::v1::storage::StorageBackend::Local(local) => {
+                let path = local.registry_path.clone();
+                store_path = Some(path)
             }
-        }
+            plm_core::plm::registry::v1::storage::StorageBackend::S3(_) => {
+                todo!()
+            }
+        },
     }
     let storage = setup_storage(&mut storage, &store_path.unwrap())?;
 
@@ -49,7 +56,7 @@ async fn main() -> RegistryResult<()> {
     setup_db(&mut db).await?;
     dbg!(db);
 
-    let mut server_builder = RegistryServerBuilder::new(storage);
+    let server_builder = RegistryServerBuilder::new(storage);
     let tmp_server_cfg = config.server.unwrap();
     let addr = format!("{}:{}", tmp_server_cfg.host, tmp_server_cfg.port);
     let server = setup_server(&mut server_builder.clone(), addr)?;
@@ -87,15 +94,18 @@ fn setup_configs(cfg_builder: &mut ConfigBuilder) -> RegistryResult<Config> {
     Ok(cfg)
 }
 
-fn setup_storage(storage_builder: &mut StorageBuilder, store_path: &str) -> RegistryResult<Box<dyn RegistryStorage + Sync + Send>> {
+fn setup_storage(
+    storage_builder: &mut StorageBuilder,
+    store_path: &str,
+) -> RegistryResult<Box<dyn RegistryStorage + Sync + Send>> {
     // TODO: Validate registry path for local storage / ping S3
     debug!("setting up storage");
 
-    let mut storage = storage_builder.with_store_path(store_path);
+    let storage = storage_builder.with_store_path(store_path);
     Ok(Box::new(storage.clone().build()))
 }
 
-async fn setup_db(db_builder: &mut DataBuilder) -> RegistryResult<()> {
+async fn setup_db(_db_builder: &mut DataBuilder) -> RegistryResult<()> {
     debug!("setting up database");
     let mut pool = establish_connection();
     initialize_schema(&mut pool);

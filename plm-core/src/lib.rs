@@ -1,10 +1,22 @@
-use protoc_bin_vendored;
+// Copyright 2023 Sylk Technologies
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 use serde::{
     de::{self, MapAccess, Visitor},
     ser::{SerializeMap, SerializeStruct},
     Deserialize, Deserializer, Serializer,
 };
-use serde_json::Value;
 use std::fmt;
 /// Core protobuf schema of plm
 pub mod plm {
@@ -50,9 +62,8 @@ pub mod utils {
         let mut hasher = Sha256::new();
         hasher.update(&fd_set_bytes);
         let hash = hasher.finalize();
-        let hex_string = hex::encode(hash);
-
-        hex_string
+        
+        hex::encode(hash)
     }
 }
 
@@ -522,7 +533,7 @@ impl<'de> Deserialize<'de> for Server {
 
                 let port = port.ok_or_else(|| de::Error::missing_field("port"))?;
                 let host = host.ok_or_else(|| de::Error::missing_field("host"))?;
-                let log_level = log_level.unwrap_or_else(|| 0);
+                let log_level = log_level.unwrap_or(0);
 
                 Ok(Server {
                     port,
@@ -536,7 +547,7 @@ impl<'de> Deserialize<'de> for Server {
     }
 }
 
-use crate::plm::registry::v1::{server, storage::StorageBackend};
+use crate::plm::registry::v1::storage::StorageBackend;
 // Re exporting for easy use by 3rd parties
 pub use crate::{
     plm::{
@@ -550,11 +561,12 @@ pub use crate::{
         registry::v1::{
             download_request::FullOrPartial, download_response::ProtobufOrGz,
             registry_service_client, registry_service_server, Compressions, Config, Data,
-            DownloadRequest, DownloadResponse, Local, PartialDownloadRequest, Server, Storage, S3,
-            PublishRequest
+            DownloadRequest, DownloadResponse, Local, PartialDownloadRequest, PublishRequest,
+            Server, Storage, S3,
         },
         user::v1::{
-            user_service_client, user_service_server, CreateUserRequest, LoginRequest, LoginResponse, Role, User,
+            user_service_client, user_service_server, CreateUserRequest, LoginRequest,
+            LoginResponse, Role, User,
         },
     },
     utils::fs::FileSystem,

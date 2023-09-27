@@ -1,3 +1,17 @@
+// Copyright 2023 Sylk Technologies
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 use chrono::NaiveDateTime;
 use diesel::sql_types::*;
 
@@ -40,10 +54,9 @@ pub struct Organization {
 #[derive(Debug, Queryable, Identifiable, Associations)]
 #[diesel(belongs_to(User, foreign_key = user_id))]
 #[diesel(belongs_to(Organization, foreign_key = org_id))]
-#[diesel(primary_key(user_id))]
+#[diesel(primary_key(user_id, org_id))]
 #[diesel(table_name = crate::data::schema::user_organizations)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
-#[primary_key(user_id, org_id)]
 pub struct UserOrganization {
     pub user_id: i32,
     pub org_id: i32,
@@ -63,22 +76,21 @@ pub struct Library {
     pub updated_at: Option<NaiveDateTime>,
 }
 
-
 #[derive(Insertable)]
 #[diesel(table_name = crate::data::schema::libraries)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewLibrary<'a> {
     pub name: &'a str,
-    pub org_id: Option< &'a i32>,
+    pub org_id: Option<&'a i32>,
     pub public: bool,
 }
 
 #[derive(Debug, QueryableByName)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct LatestVersion {
-    #[sql_type = "Integer"]
+    #[diesel(sql_type = Integer)]
     pub max_version_id: i32,
-    #[sql_type = "Text"]
+    #[diesel(sql_type = Text)]
     pub max_version_number: String,
 }
 
@@ -103,7 +115,6 @@ pub struct Dependency {
     pub dependent_version_id: i32,
     pub dependency_range: String,
 }
-
 
 #[derive(Insertable)]
 #[diesel(table_name = crate::data::schema::versions)]

@@ -1,3 +1,17 @@
+// Copyright 2023 Sylk Technologies
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 use std::env;
 use std::fs::{self, File};
 use std::io::{self, BufRead, BufReader, Read, Write};
@@ -5,8 +19,6 @@ use std::path::{Path, PathBuf};
 
 use serde::Serialize;
 use tracing::trace;
-
-struct TabDelimited;
 
 pub const PLM_CONFIG_FILE: &str = ".plmrc";
 
@@ -85,7 +97,7 @@ impl FileSystem {
         Ok(Entry::Directory(dir.to_path_buf(), entries))
     }
 
-    pub fn list_protos(dir_path: &PathBuf) -> io::Result<Vec<String>> {
+    pub fn list_protos(dir_path: &Path) -> io::Result<Vec<String>> {
         let mut proto_files = Vec::new();
         Self::walk_dir(dir_path, &mut proto_files)?;
 
@@ -140,6 +152,7 @@ impl FileSystem {
     }
 
     pub fn parse_plmrc_file(home: bool) -> io::Result<HashMap<String, String>> {
+        #[allow(unused_assignments)]
         let mut file: Option<File> = None;
         if home {
             file = Some(File::open(Self::join_paths(
@@ -160,7 +173,7 @@ impl FileSystem {
             let trimmed_line = line.trim();
 
             // Skip comments and empty lines
-            if trimmed_line.starts_with("#") || trimmed_line.is_empty() {
+            if trimmed_line.starts_with('#') || trimmed_line.is_empty() {
                 continue;
             }
 

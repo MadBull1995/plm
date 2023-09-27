@@ -128,11 +128,10 @@ pub enum ConfigAction {
 /// Create a new library
 #[derive(Debug, Args, Clone)]
 pub struct Init {
-    
     /// The library name to initialize
     #[arg(long)]
     pub library_name: Option<String>,
-    
+
     /// The library src directory where the protobuf files are nested
     #[arg(long)]
     pub src_dir: Option<String>,
@@ -140,7 +139,7 @@ pub struct Init {
     /// The library description
     #[arg(long)]
     pub description: Option<String>,
-    
+
     /// The library version in semver (excluding suffix only major.minor.patch supported currently)
     #[arg(long)]
     pub version: Option<String>,
@@ -158,18 +157,17 @@ pub struct Init {
     pub exclude: Option<String>,
 }
 
-
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 pub enum License {
     /// APACHE-2.0
     APACHE2,
-    
+
     /// MIT
     MIT,
 
     /// GPL-3.0
     GPL,
-    
+
     /// Unlicense
     UNLICENSE,
 }

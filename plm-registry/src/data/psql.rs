@@ -1,18 +1,32 @@
+// Copyright 2023 Sylk Technologies
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 use crate::{diesel_migrations, models::Library};
-use chrono::NaiveDateTime;
-use diesel::{pg::PgConnection, sql_types::Text};
-use diesel::{prelude::*, sql_query};
 use diesel::prelude::*;
-use tracing::debug;
+use diesel::{pg::PgConnection, sql_types::Text};
+use diesel::sql_query;
 use std::ops::DerefMut;
 use tokio::sync::Mutex;
+use tracing::debug;
 
 use dotenvy::dotenv;
 use std::env;
 use std::sync::Arc;
-use tokio::task;
 
-use crate::models::{NewUser, User, NewLibrary, LatestVersion, NewVersion, Version, NewDependency, Dependency};
+use crate::models::{
+    Dependency, LatestVersion, NewDependency, NewLibrary, NewUser, NewVersion, User, Version,
+};
 
 type QueryResult<T> = Result<T, diesel::result::Error>;
 type DB = diesel::pg::Pg;
@@ -21,6 +35,12 @@ const MIGRATIONS: diesel_migrations::EmbeddedMigrations = embed_migrations!();
 #[derive(Clone)]
 pub struct QueryLayer {
     pub conn: Arc<Mutex<PgConnection>>,
+}
+
+impl Default for QueryLayer {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl QueryLayer {
@@ -47,7 +67,6 @@ impl QueryLayer {
     }
 
     pub async fn create_user(&self, user: &plm_core::CreateUserRequest) -> QueryResult<User> {
-        use crate::schema::users;
         let new_user = NewUser {
             username: &user.username,
             password_hash: &user.password,
@@ -70,18 +89,27 @@ impl QueryLayer {
     // Libraries queries
 
     /// Create a new version entry
-    pub fn create_version(&self, new_version: &NewVersion<'_>, mut conn: &mut PgConnection) -> QueryResult<Version> {
+    pub fn create_version(
+        &self,
+        new_version: &NewVersion<'_>,
+        conn: &mut PgConnection,
+    ) -> QueryResult<Version> {
         use crate::schema::versions;
         diesel::insert_into(versions::table)
             .values(new_version)
-            .returning((versions::id, versions::library_id, versions::version_number, versions::created_at))
+            .returning((
+                versions::id,
+                versions::library_id,
+                versions::version_number,
+                versions::created_at,
+            ))
             .get_result(conn)
     }
 
     /// Retrieve all versions for a specific library
     pub async fn get_versions_by_library(&self, lib_id: i32) -> QueryResult<Vec<Version>> {
         use crate::schema::versions;
-        
+
         let mut c = self.conn.lock().await;
         versions::table
             .filter(versions::library_id.eq(lib_id))
@@ -89,34 +117,55 @@ impl QueryLayer {
     }
 
     /// Create a new dependency entry
-    pub fn create_dependency(&self, new_dependency: &NewDependency<'_>, mut conn: &mut PgConnection) -> QueryResult<Dependency> {
+    pub fn create_dependency(
+        &self,
+        new_dependency: &NewDependency<'_>,
+        conn: &mut PgConnection,
+    ) -> QueryResult<Dependency> {
         use crate::schema::dependencies;
-        
+
         diesel::insert_into(dependencies::table)
             .values(new_dependency)
-            .returning((dependencies::id, dependencies::version_id, dependencies::dependent_version_id, dependencies::dependency_range))
+            .returning((
+                dependencies::id,
+                dependencies::version_id,
+                dependencies::dependent_version_id,
+                dependencies::dependency_range,
+            ))
             .get_result(conn)
     }
 
     /// Retrieve dependencies for a specific version
-    pub fn get_dependencies_by_version(&self, ver_id: i32, mut conn: &mut PgConnection) -> QueryResult<Vec<Dependency>> {
+    pub fn get_dependencies_by_version(
+        &self,
+        ver_id: i32,
+        conn: &mut PgConnection,
+    ) -> QueryResult<Vec<Dependency>> {
         use crate::schema::dependencies;
-        
+
         dependencies::table
             .filter(dependencies::version_id.eq(ver_id))
             .load::<Dependency>(conn)
     }
 
     /// Retrieve dependent versions for a specific version
-    pub fn get_dependent_versions(&self, ver_id: i32, mut conn: &mut PgConnection) -> QueryResult<Vec<Dependency>> {
+    pub fn get_dependent_versions(
+        &self,
+        ver_id: i32,
+        conn: &mut PgConnection,
+    ) -> QueryResult<Vec<Dependency>> {
         use crate::schema::dependencies;
-        
+
         dependencies::table
             .filter(dependencies::dependent_version_id.eq(ver_id))
             .load::<Dependency>(conn)
     }
-    
-    pub fn create_release(&self, release: &plm_core::Library, mut conn: &mut PgConnection) -> QueryResult<Library> {
+
+    pub fn create_release(
+        &self,
+        release: &plm_core::Library,
+        conn: &mut PgConnection,
+    ) -> QueryResult<Library> {
         let new_release = NewLibrary {
             name: &release.name,
             org_id: None,
@@ -129,45 +178,50 @@ impl QueryLayer {
             .get_result(conn)
     }
 
-    pub async fn get_latest_version_for_lib(&self, lib_name: &str) -> QueryResult<Option<LatestVersion>> {
+    pub async fn get_latest_version_for_lib(
+        &self,
+        lib_name: &str,
+    ) -> QueryResult<Option<LatestVersion>> {
         let mut c = self.conn.lock().await;
 
         let result = sql_query("SELECT * FROM get_latest_version($1)")
             .bind::<Text, _>(lib_name)
             .load::<LatestVersion>(c.deref_mut())?
             .pop();
-        println!("{:?}",result);
+        println!("{:?}", result);
 
         // let result = sql_query("")
         // .bind::<Text, _>(lib_name)
         // .get_result(c.deref_mut());
         match result {
-            None => {
-                Err(diesel::NotFound)
-            },
-            Some(v) => Ok(Some(v))
+            None => Err(diesel::NotFound),
+            Some(v) => Ok(Some(v)),
         }
     }
 
-    pub async fn get_release(&self, lib_name: &str, lib_version: Option<i32>, lib_scope: Option<String>) -> QueryResult<Option<(Library, Vec<Version>)>> {
-        use crate::schema::{libraries::dsl::*, versions, dependencies};
+    pub async fn get_release(
+        &self,
+        lib_name: &str,
+        _lib_version: Option<i32>,
+        _lib_scope: Option<String>,
+    ) -> QueryResult<Option<(Library, Vec<Version>)>> {
+        use crate::schema::{libraries::dsl::*, versions};
         let mut c = self.conn.lock().await;
         debug!("{:?}", lib_name);
         // Start with a base query for libraries
-        let query = libraries
-            .filter(name.eq(lib_name))
-            .into_boxed();  // Boxed queries allow dynamic composition
-    
+        let query = libraries.filter(name.eq(lib_name)).into_boxed(); // Boxed queries allow dynamic composition
+
         // // Conditionally apply optional filters
         // if let Some(v) = lib_version {
         //     query = query.filter(libraries::version.eq(v));
         // }
-        
+
         // Execute the query for libraries
         if let Some(library) = query
             .select(Library::as_select())
             .first::<Library>(c.deref_mut())
-            .optional()? {
+            .optional()?
+        {
             println!("{:?}", library);
             // Now query for versions and dependencies based on the found library
             let related_versions = versions::table
@@ -177,7 +231,7 @@ impl QueryLayer {
             // let related_dependencies = Dependency::belonging_to(&related_versions)
             //     .load::<Dependency>(c.deref_mut())?
             //     .grouped_by(&related_versions);
-    
+
             Ok(Some((library, related_versions)))
         } else {
             Ok(None)
@@ -194,7 +248,8 @@ pub fn establish_connection() -> PgConnection {
 }
 
 pub fn initialize_schema(conn: &mut impl diesel_migrations::MigrationHarness<DB>) {
-    conn.run_pending_migrations(MIGRATIONS);
+    conn.run_pending_migrations(MIGRATIONS)
+        .expect("failed to run pending migrations");
 
     // let statements = vec![
     //     r#"

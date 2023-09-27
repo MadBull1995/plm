@@ -1,14 +1,31 @@
+// Copyright 2023 Sylk Technologies
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 use std::path::Path;
 
-use plm_core::{FileSystem, Manifest, DownloadRequest, library::store::LibraryStore, plm::library::v1::Dependency};
+use plm_core::{
+    library::store::LibraryStore, plm::library::v1::Dependency, FileSystem,
+    Manifest,
+};
 
 use crate::{
+    registry::client::CliRegistryClientBuilder,
     utils::{
-        errors::{PlmError, PlmResult},
         lock::{Library, ProtoLock},
-        prompter::Prompter, configs::CliConfigs,
+        prompter::Prompter,
     },
-    Install, registry::client::{CliRegistryClient, CliRegistryClientBuilder},
+    Install,
 };
 
 pub async fn install_command(
@@ -39,20 +56,22 @@ pub async fn install_command(
             .with_token(token);
         let mut client = registry_client_builder.build().await?;
 
-        let lib = LibraryStore::install(Dependency {
-            library_id: lib_name.clone(),
-            version: "".to_string()
-        }, &mut client).await?;
+        LibraryStore::install(
+            Dependency {
+                library_id: lib_name.clone(),
+                version: "".to_string(),
+            },
+            &mut client,
+        )
+        .await?;
 
-
-        let mut download_req = DownloadRequest::default();
-        download_req.full_or_partial = Some(
-            plm_core::FullOrPartial::Full(
-                lib_name.clone()
-            )
-        );
-        // let downloaded_lib = client.download(download_req).await?;
+        // let download_req = DownloadRequest {
+        //     full_or_partial: Some(plm_core::FullOrPartial::Full(lib_name.clone())),
+        //     ..Default::default()
+        // };
         
+        // let downloaded_lib = client.download(download_req).await?;
+
         // println!("{:?}", downloaded_lib);
         // TODO: Download Dependencies
         Prompter::task(5, 6, "fetching dependencies");
@@ -88,16 +107,22 @@ pub async fn install_command(
     Ok(())
 }
 
-
 fn validate_lib_name(name: &str) -> anyhow::Result<()> {
-    if name.starts_with("@") {
-        if !name.chars().skip(1).all(|c| c.is_ascii_alphabetic() || c == '-' || c == '_' || c == '/') {
+    if name.starts_with('@') {
+        if !name
+            .chars()
+            .skip(1)
+            .all(|c| c.is_ascii_alphabetic() || c == '-' || c == '_' || c == '/')
+        {
             return Err(anyhow::anyhow!("Library name must consist of ASCII alphabetic characters, dash, lower dash, or forward slash"));
         }
-    } else {
-        if !name.chars().all(|c| c.is_ascii_alphabetic() || c == '-' || c == '_') {
-            return Err(anyhow::anyhow!("Library name must consist of ASCII alphabetic characters, dash, or lower dash"));
-        }
+    } else if !name
+        .chars()
+        .all(|c| c.is_ascii_alphabetic() || c == '-' || c == '_')
+    {
+        return Err(anyhow::anyhow!(
+            "Library name must consist of ASCII alphabetic characters, dash, or lower dash"
+        ));
     }
     Ok(())
 }

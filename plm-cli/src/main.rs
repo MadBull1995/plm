@@ -1,7 +1,6 @@
 use anyhow::Context;
-use colored::*;
 use human_panic::setup_panic;
-use log::{debug, error, info, log_enabled, Level, LevelFilter};
+use log::{debug, LevelFilter};
 use plm_cli::{
     commands,
     helpers::{get_global_plmrc_path, get_manifest_from_file},
@@ -11,26 +10,24 @@ use plm_cli::{
         self,
         configs::CliConfigs,
         errors::{PlmError, PlmResult},
-        lock::{Library, ProtoLock},
+        lock::ProtoLock,
         prompter::Prompter,
     },
     Cli, Commands,
 };
 use plm_core::FileSystem;
 use std::{
-    collections::HashMap, fmt::Write, io::Write as ioWrite, process::ExitCode, time::Duration,
+    collections::HashMap, io::Write as ioWrite
 };
 use tokio::{
     signal,
-    sync::{mpsc, oneshot},
-    time::sleep,
+    sync::mpsc,
 };
-use tracing::instrument;
 
 #[tokio::main]
 async fn main() -> PlmResult<()> {
     setup_panic!();
-    let (shutdown_send, mut shutdown_recv) = mpsc::channel::<bool>(1);
+    let (_shutdown_send, mut shutdown_recv) = mpsc::channel::<bool>(1);
 
     tokio::spawn(async move {
         tokio::select! {
@@ -72,50 +69,50 @@ async fn main() -> PlmResult<()> {
     std::process::exit(exitcode::OK);
 }
 
-async fn process() -> PlmResult<()> {
-    sleep(Duration::from_millis(500)).await;
-    Prompter::task(1, 7, "Adding WASM target...");
+// async fn process() -> PlmResult<()> {
+//     sleep(Duration::from_millis(500)).await;
+//     Prompter::task(1, 7, "Adding WASM target...");
 
-    Prompter::task(2, 7, "Compiling to WASM...");
+//     Prompter::task(2, 7, "Compiling to WASM...");
 
-    Prompter::task(3, 7, "Creating a pkg directory...");
-    sleep(Duration::from_millis(500)).await;
+//     Prompter::task(3, 7, "Creating a pkg directory...");
+//     sleep(Duration::from_millis(500)).await;
 
-    let mut downloaded = 0;
-    let total_size = 231231231;
+//     let mut downloaded = 0;
+//     let total_size = 231231231;
 
-    let pb = indicatif::ProgressBar::new(total_size);
-    pb.set_style(
-        indicatif::ProgressStyle::with_template(
-            "{msg}\n[{elapsed_precise}] [{wide_bar:.cyan/blue}] {bytes}/{total_bytes} ({eta})",
-        )
-        .unwrap()
-        .with_key(
-            "eta",
-            |state: &indicatif::ProgressState, w: &mut dyn Write| {
-                write!(w, "{:.1}s", state.eta().as_secs_f64()).unwrap()
-            },
-        )
-        .progress_chars("#-"),
-    );
+//     let pb = indicatif::ProgressBar::new(total_size);
+//     pb.set_style(
+//         indicatif::ProgressStyle::with_template(
+//             "{msg}\n[{elapsed_precise}] [{wide_bar:.cyan/blue}] {bytes}/{total_bytes} ({eta})",
+//         )
+//         .unwrap()
+//         .with_key(
+//             "eta",
+//             |state: &indicatif::ProgressState, w: &mut dyn Write| {
+//                 write!(w, "{:.1}s", state.eta().as_secs_f64()).unwrap()
+//             },
+//         )
+//         .progress_chars("#-"),
+//     );
 
-    while downloaded < total_size {
-        let new = std::cmp::min(downloaded + 223211, total_size);
-        downloaded = new;
-        // pb.println(format!("[+] finished #{}", downloaded));
-        pb.set_position(new);
-        pb.set_message(
-            format!(">{:3}%", 100 * downloaded / total_size)
-                .dimmed()
-                .to_string(),
-        );
-        sleep(Duration::from_millis(12)).await;
-    }
+//     while downloaded < total_size {
+//         let new = std::cmp::min(downloaded + 223211, total_size);
+//         downloaded = new;
+//         // pb.println(format!("[+] finished #{}", downloaded));
+//         pb.set_position(new);
+//         pb.set_message(
+//             format!(">{:3}%", 100 * downloaded / total_size)
+//                 .dimmed()
+//                 .to_string(),
+//         );
+//         sleep(Duration::from_millis(12)).await;
+//     }
 
-    pb.finish_with_message("> downloaded");
+//     pb.finish_with_message("> downloaded");
 
-    Ok(())
-}
+//     Ok(())
+// }
 
 async fn process_commands(args: Cli, cfgs: &mut CliConfigs) -> anyhow::Result<()> {
     match args.command {
@@ -124,19 +121,19 @@ async fn process_commands(args: Cli, cfgs: &mut CliConfigs) -> anyhow::Result<()
             if check_lib_exists() {
                 Prompter::warning("seems like a library is alreasy initiated on current directory");
             } else {
-                let proto_lock_path = proto_lock_path(&cfgs);
+                let proto_lock_path = proto_lock_path(cfgs);
                 let proto_lock = ProtoLock::default();
                 proto_lock.to_file(proto_lock_path)?;
                 debug!("{:#?}", init);
-                commands::init::init_command(&init,&false)
+                commands::init::init_command(&init)
                     .await
-                    .with_context(|| format!("init command errored"))?;
+                    .with_context(|| "init command errored".to_string())?;
             }
         }
 
         // <-------- Install ---------->
         Commands::Install(install) => {
-            let proto_lock_path = proto_lock_path(&cfgs);
+            let proto_lock_path = proto_lock_path(cfgs);
             let mut manifest = get_manifest_from_file()?;
 
             Prompter::task(1, 6, "resolving proto-lock.json file");
@@ -149,10 +146,7 @@ async fn process_commands(args: Cli, cfgs: &mut CliConfigs) -> anyhow::Result<()
                     library.name, manifest.name
                 ));
 
-                Prompter::info(&format!(
-                    "Try to run: $ plm update {}",
-                    library.name
-                ));
+                Prompter::info(&format!("Try to run: $ plm update {}", library.name));
             } else {
                 commands::install::install_command(
                     install,
@@ -164,27 +158,36 @@ async fn process_commands(args: Cli, cfgs: &mut CliConfigs) -> anyhow::Result<()
                     cfgs.clone().token.unwrap_or_default(),
                 )
                 .await
-                .with_context(|| format!("install command errored"))?;
+                .with_context(|| "install command errored".to_string())?;
             }
         }
 
         // <-------- Uninstall -------->
-        Commands::Uninstall(uninstall) => todo!(),
+        Commands::Uninstall(_uninstall) => todo!(),
 
         // <-------- Publish ---------->
-        Commands::Publish(publish) => {
+        Commands::Publish(_publish) => {
             let manifest = get_manifest_from_file()?;
-            
-            commands::publish::publish_command(manifest, cfgs.clone(), cfgs.clone().token.unwrap_or_default())
-                .await
-                .with_context(|| format!("publish command errored"))?;
+
+            commands::publish::publish_command(
+                manifest,
+                cfgs.clone(),
+                cfgs.clone().token.unwrap_or_default(),
+            )
+            .await
+            .with_context(|| "publish command errored".to_string())?;
         }
 
         // <-------- Login ------------>
         Commands::Login(login) => {
-            commands::login::login_command(cfgs,&login.user, &login.password, cfgs.registry.clone())
-                .await
-                .with_context(|| format!("login command errored"))?;
+            commands::login::login_command(
+                cfgs,
+                &login.user,
+                &login.password,
+                cfgs.registry.clone(),
+            )
+            .await
+            .with_context(|| "login command errored".to_string())?;
         }
 
         // <-------- Config ----------->
@@ -210,7 +213,7 @@ async fn process_commands(args: Cli, cfgs: &mut CliConfigs) -> anyhow::Result<()
                     plm_cli::ConfigCommand::Set { key, value } => {
                         // let mut config = cfg().await.unwrap_or_else(|| HashMap::new());
                         // config.insert(key.clone(), value.clone());
-                        if key == "registry".to_string() {
+                        if key == *"registry" {
                             cfgs.registry = value;
                         } else {
                             // cfgs.to_json()
@@ -220,7 +223,7 @@ async fn process_commands(args: Cli, cfgs: &mut CliConfigs) -> anyhow::Result<()
 
                         cfgs.write_plmrc_file()?;
                     }
-                    plm_cli::ConfigCommand::Show { json } => {
+                    plm_cli::ConfigCommand::Show { json: _ } => {
                         cfgs.to_json();
                     }
                 }
@@ -230,17 +233,17 @@ async fn process_commands(args: Cli, cfgs: &mut CliConfigs) -> anyhow::Result<()
     Ok(())
 }
 
-async fn handle_shutdown(tx: mpsc::Sender<bool>) -> PlmResult<()> {
-    tx.send(true)
-        .await
-        .map_err(|err| PlmError::InternalError("Failed to send shutdown signal".to_string()))?;
+// async fn handle_shutdown(tx: mpsc::Sender<bool>) -> PlmResult<()> {
+//     tx.send(true)
+//         .await
+//         .map_err(|_err| PlmError::InternalError("Failed to send shutdown signal".to_string()))?;
 
-    Ok(())
-}
+//     Ok(())
+// }
 
 async fn get_plmrc_file() -> Option<HashMap<String, String>> {
     let dot_plmrc = FileSystem::parse_plmrc_file(true).map_err(|err| {
-        return PlmError::InternalError(format!("Failed to load .plmrc: {}", err.to_string()));
+        PlmError::InternalError(format!("Failed to load .plmrc: {}", err))
     });
     let mut plmrc: Option<HashMap<String, String>> = None;
     match dot_plmrc {
@@ -271,13 +274,11 @@ fn setup_prompter(debug: u8, quiet: bool) {
     if quiet {
         log_builder.filter_level(log::LevelFilter::Off);
     } else {
-        log_builder.filter_level(
-            match debug {
-                1 => LevelFilter::Debug,
-                2 => LevelFilter::Trace,
-                _ => LevelFilter::Info
-            }
-        );
+        log_builder.filter_level(match debug {
+            1 => LevelFilter::Debug,
+            2 => LevelFilter::Trace,
+            _ => LevelFilter::Info,
+        });
     }
     log_builder
         .format(|buf, record| writeln!(buf, "{}", record.args()))

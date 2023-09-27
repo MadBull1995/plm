@@ -1,33 +1,33 @@
-use std::{
-    collections::HashMap,
-    io,
-    path::{Path, PathBuf},
-};
+// Copyright 2023 Sylk Technologies
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-use anyhow::{Context, Result};
+
+use anyhow::Result;
 
 use plm_core::{
-    library::store::LibraryStore, plm::package::v1::File, Compressions, DownloadRequest,
-    FileSystem, Manifest, PublishRequest,
+    library::store::LibraryStore,
+    Manifest, PublishRequest,
 };
-use protobuf::{descriptor::FileDescriptorSet, Message};
-use tokio::sync::mpsc::Sender;
-use tonic::Status;
-
 use crate::{
     registry::client::CliRegistryClientBuilder,
     utils::{
         configs::CliConfigs,
-        errors::{PlmError, PlmResult},
         prompter::Prompter,
     },
 };
 
-pub async fn publish_command(
-    manifest: Manifest,
-    configs: CliConfigs,
-    token: String
-) -> Result<()> {
+pub async fn publish_command(manifest: Manifest, configs: CliConfigs, token: String) -> Result<()> {
     let current_dir = &configs.current_dir;
 
     Prompter::info(format!("publishing: {:<15}", manifest.name).as_str());
@@ -40,8 +40,9 @@ pub async fn publish_command(
         .with_addr(configs.registry)
         .with_token(token);
     let mut client = registry_client_builder.build().await?;
-    let mut publish = PublishRequest::default();
-    publish.lib = Some(lib);
+    let publish = PublishRequest {
+        lib: Some(lib)
+    };
     client.publish(publish).await?;
 
     Prompter::task(4, 4, "Upload");

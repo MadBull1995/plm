@@ -1,14 +1,27 @@
+// Copyright 2023 Sylk Technologies
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 use std::{
     collections::HashMap,
     io,
     path::{Path, PathBuf},
 };
 
-use anyhow::{anyhow, Context, Error, Result};
+use anyhow::{anyhow, Context, Result};
 use protobuf::{descriptor::FileDescriptorSet, Message};
 use tokio::fs;
 use tracing::{debug, info};
-use tracing_subscriber::fmt::format;
 
 use crate::{
     manifest::MANIFEST_FILE,
@@ -52,9 +65,8 @@ impl LibraryStore {
 
     /// Unpacks a library into a local directory
     pub async fn unpack(library: &Library) -> Result<()> {
-        let lib_dir = Path::new(Self::PROTO_MODULES_PATH)
-            .join(library.name.as_str());
-            // .join(library.version.as_str());
+        let lib_dir = Path::new(Self::PROTO_MODULES_PATH).join(library.name.as_str());
+        // .join(library.version.as_str());
 
         // fs::remove_dir_all(&lib_dir).await.ok();
 
@@ -66,8 +78,7 @@ impl LibraryStore {
 
         for pkg in library.clone().packages {
             if !pkg.name.eq("") {
-                let pkg_dir = Path::new(&lib_dir)
-                    .join(pkg.name.as_str());
+                let pkg_dir = Path::new(&lib_dir).join(pkg.name.as_str());
                 fs::remove_dir_all(&pkg_dir).await.ok();
                 debug!("clearing package directory: {:?}", pkg_dir);
             }
@@ -78,7 +89,7 @@ impl LibraryStore {
                 fs::write(file_path, file.content).await?;
             }
         }
-        
+
         debug!(
             "unpacked {}@{} into {}",
             library.name,
@@ -95,12 +106,12 @@ impl LibraryStore {
         registry: &mut R,
     ) -> Result<()> {
         let library = registry.download(dependency).await?;
-        
+
         debug!("downloaded: {}:{}", library.name, library.version);
-        
+
         Self::unpack(&library).await?;
 
-        let mut tree = format!(":: installed {}@{}", library.name, library.version);
+        let tree = format!(":: installed {}@{}", library.name, library.version);
 
         let Manifest { dependencies, .. } = Self::resolve(&Dependency {
             library_id: library.name,
@@ -108,7 +119,7 @@ impl LibraryStore {
         })
         .await?;
 
-        let dependency_count = dependencies.len();
+        let _dependency_count = dependencies.len();
 
         for (index, dependency) in dependencies.into_iter().enumerate() {
             println!("i: {} - {:?}", index, dependency);
@@ -162,7 +173,7 @@ impl LibraryStore {
     /// Resolves a package in the local file system
     pub async fn resolve(lib: &Dependency) -> Result<Manifest> {
         let manifest = Self::locate(lib).join(MANIFEST_FILE);
-        let manifest = FileSystem::read_manifest(&manifest.to_str().unwrap())
+        let manifest = FileSystem::read_manifest(manifest.to_str().unwrap())
             .with_context(|| format!("Failed to locate local manifest for package: {:?}", lib))?;
         Ok(manifest)
     }
@@ -170,7 +181,7 @@ impl LibraryStore {
     /// Packages a release from the local file system state
     pub async fn release(current_dir: &Path, manifest: Manifest) -> Result<Library> {
         for dependency in manifest.dependencies.iter() {
-            let resolved = Self::resolve(&Dependency {
+            let _resolved = Self::resolve(&Dependency {
                 library_id: dependency.0.to_string(),
                 version: dependency.1.to_string(),
             })
@@ -178,7 +189,9 @@ impl LibraryStore {
             .with_context(|| "Failed to resolve dependency locally")?;
         }
 
-        let lib_path = fs::canonicalize(&manifest.src_dir).await.with_context(|| format!("failed to canonicalize the src_dir: {}", manifest.src_dir))?;
+        let lib_path = fs::canonicalize(&manifest.src_dir)
+            .await
+            .with_context(|| format!("failed to canonicalize the src_dir: {}", manifest.src_dir))?;
         info!("{:?}", lib_path);
         // let mut archive = tar::Builder::new(Vec::new());
 
@@ -197,20 +210,20 @@ impl LibraryStore {
         // println!("{:?}", protos_dir);
         // Get the vendored protoc bin path
         let protoc = crate::protoc::protoc_bin_path()
-            .with_context(|| format!("Failed to find protoc bin path"))?;
+            .with_context(|| "Failed to find protoc bin path".to_string())?;
         std::env::set_var("PROTOC", protoc);
 
-        let mut rel_proto_path = FileSystem::to_relative_path(&lib_path, &current_dir)
-            .with_context(|| format!("failed to get relative proto src dir"))?;
+        let rel_proto_path = FileSystem::to_relative_path(&lib_path, current_dir)
+            .with_context(|| "failed to get relative proto src dir".to_string())?;
 
         let dot_plm_path = FileSystem::join_paths(current_dir, ".plm");
         let dot_plm_builds = FileSystem::join_paths(&dot_plm_path, "builds");
 
         // Compile the proto files using `tonic_build`
         let include_path =
-            crate::protoc::include_path().with_context(|| format!("Failed to get include path"))?;
+            crate::protoc::include_path().with_context(|| "Failed to get include path".to_string())?;
         let mut proto_path = rel_proto_path.to_str().unwrap();
-        if proto_path == "" {
+        if proto_path.is_empty() {
             proto_path = "."
         }
         // info!("{:?} -> {}", rel_proto_path, rel_proto_path.to_str().unwrap() != lib_path.to_str().unwrap() );
@@ -222,7 +235,7 @@ impl LibraryStore {
         } else {
             // Compile the proto files using `tonic_build`
             tonic_build::configure()
-                .file_descriptor_set_path(FileSystem::join_paths(&dot_plm_builds, "build.pb"))
+                .file_descriptor_set_path(FileSystem::join_paths(dot_plm_builds, "build.pb"))
                 .out_dir(&dot_plm_path)
                 .protoc_arg(format!("-I{}", proto_path))
                 .build_client(false)
@@ -245,7 +258,7 @@ impl LibraryStore {
                         metadata: HashMap::new(),
                         ..Default::default()
                     },
-                    Err(e) => {
+                    Err(_e) => {
                         // Prompter::error(&format!("error on reading proto file: {:?}", e));
                         crate::Package::default()
                     }
@@ -278,27 +291,32 @@ impl LibraryStore {
     }
 
     // Collect .proto files in a given path whilst excluding vendored ones
-    pub fn collect(protos_dir: &PathBuf, lib_path: &Path, exclude: &[String]) -> Result<Vec<String>> {
+    pub fn collect(
+        protos_dir: &Path,
+        lib_path: &Path,
+        exclude: &[String],
+    ) -> Result<Vec<String>> {
         // Locate `.proto` files under current library
-        let files = FileSystem::list_protos(&protos_dir)
-            .with_context(|| format!("failed to collect library .proto files"))?;
-        
+        let files = FileSystem::list_protos(protos_dir)
+            .with_context(|| "failed to collect library .proto files".to_string())?;
+
         // Map the abs file paths to relative for easy protoc compile
         let relative_paths: Result<Vec<String>, io::Error> = files
             .iter()
             .filter(|path| {
                 // Convert to relative path
-                let rel_path = FileSystem::to_relative_path(Path::new(path), lib_path).unwrap_or_else(|_| path.clone().into());
+                let rel_path = FileSystem::to_relative_path(Path::new(path), lib_path)
+                    .unwrap_or_else(|_| path.into());
 
                 // Check if the path should be excluded
-                !exclude.iter().any(|ex| rel_path.starts_with(&ex))
+                !exclude.iter().any(|ex| rel_path.starts_with(ex))
             })
             .map(|path| FileSystem::to_relative_path(Path::new(path), lib_path))
             .map(|result| result.map(|p| p.to_string_lossy().into_owned()))
             .collect();
 
         let mut paths =
-            relative_paths.with_context(|| format!("failed to process relative paths"))?;
+            relative_paths.with_context(|| "failed to process relative paths".to_string())?;
 
         paths.sort(); // to ensure determinism
 
@@ -310,7 +328,7 @@ fn parse_file_contents(proto_dir: PathBuf, file_paths: Vec<String>) -> Result<Ve
     let mut file_with_contents = Vec::with_capacity(file_paths.len());
     for f in file_paths {
         let content = FileSystem::read_binary_file(&FileSystem::join_paths(proto_dir.clone(), &f))
-            .with_context(|| format!("failed to read proto file"))?;
+            .with_context(|| "failed to read proto file".to_string())?;
         file_with_contents.push(File { name: f, content });
     }
 
@@ -326,7 +344,7 @@ fn parse_package_files_map(fd_set: &FileDescriptorSet) -> HashMap<String, Vec<St
 
     for fd in &fd_set.file {
         if let Some(package_name) = &fd.package {
-            let file_name = &fd.name.clone().unwrap_or_else(|| "".to_string());
+            let file_name = &fd.name.clone().unwrap_or_default();
 
             packages_to_files
                 .entry(package_name.clone())
@@ -339,10 +357,10 @@ fn parse_package_files_map(fd_set: &FileDescriptorSet) -> HashMap<String, Vec<St
 
 fn parse_fd_to_protobuf(fd_set_path: PathBuf) -> Result<(FileDescriptorSet, Vec<u8>)> {
     let file = FileSystem::read_binary_file(fd_set_path.as_path())
-        .with_context(|| format!("failed to read file descriptor set"))?;
+        .with_context(|| "failed to read file descriptor set".to_string())?;
 
     let fd = protobuf::descriptor::FileDescriptorSet::parse_from_bytes(&file.clone())
-        .with_context(|| format!("failed to parse file descriptor set"))?;
+        .with_context(|| "failed to parse file descriptor set".to_string())?;
 
     Ok((fd, file))
 }
