@@ -1190,7 +1190,7 @@ checksum = "8b870d8c151b6f2fb93e84a13146138f05d02ed11c7e7c54f8826aaaf7c9f184"
 
 [[package]]
 name = "plm-cli"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "anyhow",
  "clap",
@@ -1219,7 +1219,7 @@ dependencies = [
 
 [[package]]
 name = "plm-core"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "anyhow",
  "argon2",
@@ -1243,7 +1243,7 @@ dependencies = [
 
 [[package]]
 name = "plm-registry"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "chrono",
  "diesel",
