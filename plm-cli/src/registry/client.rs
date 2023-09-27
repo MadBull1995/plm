@@ -93,7 +93,9 @@ impl CliRegistryClientBuilder {
             format!("Bearer {}", self.token.clone().unwrap_or("".to_string()))
                 .parse()
                 .map_err(|_| {
-                    PlmError::InternalError("failed to attach token to outgoing request".to_string())
+                    PlmError::InternalError(
+                        "failed to attach token to outgoing request".to_string(),
+                    )
                 })?;
 
         let reg = registry_service_client::RegistryServiceClient::with_interceptor(

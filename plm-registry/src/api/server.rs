@@ -16,9 +16,7 @@ use std::{env, net::SocketAddr, sync::Arc};
 
 // use tower::{ServiceBuilder, layer::{util::Stack, LayerFn}};
 use plm_core::{registry_service_server, user_service_server};
-use tonic::{
-    transport::Server as GrpcServer,
-};
+use tonic::transport::Server as GrpcServer;
 use tracing::{debug, warn};
 
 use crate::{
@@ -124,7 +122,7 @@ fn auth_guard(req: tonic::Request<()>) -> Result<tonic::Request<()>, tonic::Stat
     match req.metadata().get("authorization") {
         Some(t) => match extract_bearer_token(t.to_str().unwrap()) {
             None => Err(tonic::Status::unauthenticated(
-                "Invalid token format should be: Bearer <token>".to_string()
+                "Invalid token format should be: Bearer <token>".to_string(),
             )),
             Some(t) => {
                 if auth::validate_jwt_token(t, SECRET.as_bytes()).is_ok() {

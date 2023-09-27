@@ -16,13 +16,8 @@ use plm_cli::{
     Cli, Commands,
 };
 use plm_core::FileSystem;
-use std::{
-    collections::HashMap, io::Write as ioWrite
-};
-use tokio::{
-    signal,
-    sync::mpsc,
-};
+use std::{collections::HashMap, io::Write as ioWrite};
+use tokio::{signal, sync::mpsc};
 
 #[tokio::main]
 async fn main() -> PlmResult<()> {
@@ -119,7 +114,7 @@ async fn process_commands(args: Cli, cfgs: &mut CliConfigs) -> anyhow::Result<()
         // <-------- Init-------------->
         Commands::Init(init) => {
             if check_lib_exists() {
-                Prompter::warning("seems like a library is alreasy initiated on current directory");
+                Prompter::warning("seems like a library is already initiated on current directory");
             } else {
                 let proto_lock_path = proto_lock_path(cfgs);
                 let proto_lock = ProtoLock::default();
@@ -242,9 +237,8 @@ async fn process_commands(args: Cli, cfgs: &mut CliConfigs) -> anyhow::Result<()
 // }
 
 async fn get_plmrc_file() -> Option<HashMap<String, String>> {
-    let dot_plmrc = FileSystem::parse_plmrc_file(true).map_err(|err| {
-        PlmError::InternalError(format!("Failed to load .plmrc: {}", err))
-    });
+    let dot_plmrc = FileSystem::parse_plmrc_file(true)
+        .map_err(|err| PlmError::InternalError(format!("Failed to load .plmrc: {}", err)));
     let mut plmrc: Option<HashMap<String, String>> = None;
     match dot_plmrc {
         Ok(cfg) => {

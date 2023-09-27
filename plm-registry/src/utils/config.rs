@@ -44,7 +44,6 @@ impl Default for ConfigBuilder {
     }
 }
 
-
 impl ConfigBuilder {
     // Create a new builder with some default values
     pub fn new() -> Self {

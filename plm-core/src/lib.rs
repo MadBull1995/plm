@@ -62,7 +62,7 @@ pub mod utils {
         let mut hasher = Sha256::new();
         hasher.update(&fd_set_bytes);
         let hash = hasher.finalize();
-        
+
         hex::encode(hash)
     }
 }

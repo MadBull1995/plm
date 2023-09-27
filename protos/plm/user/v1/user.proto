@@ -44,5 +44,5 @@ message LoginResponse {
 enum Role {
 	UNKNOWN_ROLE = 0;
 	ADMIN = 1;
-	CONTRIBUTER = 2;
+	CONTRIBUTOR = 2;
 }

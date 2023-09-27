@@ -252,8 +252,8 @@
                             "index": 7
                         },
                         {
-                            "name": "exclue",
-                            "fullName": "plm.package.v1.Manifest.exclue",
+                            "name": "exclude",
+                            "fullName": "plm.package.v1.Manifest.exclude",
                             "description": "Exclude list of directories.",
                             "fieldType": "TYPE_STRING",
                             "label": "LABEL_REPEATED",
@@ -965,8 +965,8 @@
                             "kind": "enum_value"
                         },
                         {
-                            "name": "CONTRIBUTER",
-                            "fullName": "plm.user.v1.Role.CONTRIBUTER",
+                            "name": "CONTRIBUTOR",
+                            "fullName": "plm.user.v1.Role.CONTRIBUTOR",
                             "index": 2,
                             "number": 2,
                             "type": "descriptor",

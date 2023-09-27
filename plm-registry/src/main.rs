@@ -23,10 +23,7 @@ use plm_registry::{
     storage::RegistryStorage,
     tracing::setup_tracing,
     types::RegistryResult,
-    DataBuilder,
-    RegistryServer,
-    RegistryServerBuilder,
-    StorageBuilder,
+    DataBuilder, RegistryServer, RegistryServerBuilder, StorageBuilder,
 };
 
 #[tokio::main]

@@ -16,17 +16,13 @@ use std::sync::Arc;
 
 use diesel::result::{DatabaseErrorKind, Error};
 use plm_core::{
-    registry_service_server, user_service_server,
-    utils::auth,
-    CreateUserRequest, DownloadRequest, DownloadResponse, FullOrPartial, Library, LoginRequest,
-    LoginResponse, PublishRequest, User,
+    registry_service_server, user_service_server, utils::auth, CreateUserRequest, DownloadRequest,
+    DownloadResponse, FullOrPartial, Library, LoginRequest, LoginResponse, PublishRequest, User,
 };
 use tonic::{async_trait, Request, Response, Status};
 use tracing::{debug, error, info, warn};
 
-use crate::{
-    api::server::SECRET, models::NewVersion, psql::QueryLayer, RegistryStorage,
-};
+use crate::{api::server::SECRET, models::NewVersion, psql::QueryLayer, RegistryStorage};
 
 #[derive(Clone)]
 pub struct RegistryService {
@@ -46,7 +42,7 @@ impl registry_service_server::RegistryService for RegistryService {
         match lib_req.full_or_partial {
             None => {
                 return Err(tonic::Status::invalid_argument(
-                    "must specify a download request full/partial".to_string()
+                    "must specify a download request full/partial".to_string(),
                 ));
             }
             Some(r) => {
@@ -115,7 +111,9 @@ impl registry_service_server::RegistryService for RegistryService {
                         }
                     }
                     FullOrPartial::Partial(_partial) => {
-                        return Err(tonic::Status::unimplemented("not implemented yet".to_string()));
+                        return Err(tonic::Status::unimplemented(
+                            "not implemented yet".to_string(),
+                        ));
                     }
                 }
             }
@@ -174,16 +172,17 @@ impl registry_service_server::RegistryService for RegistryService {
                 DatabaseErrorKind::UniqueViolation => {
                     warn!("{:?}", info);
                     Err(Status::already_exists(
-                        "release is already exists, try to publish with a differnt version.".to_string()
+                        "release is already exists, try to publish with a different version."
+                            .to_string(),
                     ))
                 }
                 _ => Err(Status::internal(format!(
-                    "some error occured during db session: {:?}",
+                    "some error occurred during db session: {:?}",
                     kind
                 ))),
             },
             Err(e) => Err(Status::internal(format!(
-                "some error occured during db session: {:?}",
+                "some error occurred during db session: {:?}",
                 e
             ))),
             Ok(r) => {
@@ -254,9 +253,7 @@ impl user_service_server::UserService for UserService {
                     match crate::auth::create_jwt_token(SECRET.as_bytes(), &u.user_id) {
                         Err(e) => Err(Status::internal(format!("failed to generate token: {}", e))),
                         Ok(jwt) => {
-                            let res = LoginResponse {
-                                token: jwt
-                            };
+                            let res = LoginResponse { token: jwt };
                             Ok(Response::new(res))
                         }
                     }

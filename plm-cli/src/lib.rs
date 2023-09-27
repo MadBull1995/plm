@@ -144,7 +144,7 @@ pub struct Init {
     #[arg(long)]
     pub version: Option<String>,
 
-    /// The library dependencies space seperated list, in format: <library>:<x.y.z>
+    /// The library dependencies space separated list, in format: <library>:<x.y.z>
     #[arg(long)]
     pub dependencies: Option<Vec<String>>,
 

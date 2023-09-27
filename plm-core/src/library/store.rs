@@ -220,8 +220,8 @@ impl LibraryStore {
         let dot_plm_builds = FileSystem::join_paths(&dot_plm_path, "builds");
 
         // Compile the proto files using `tonic_build`
-        let include_path =
-            crate::protoc::include_path().with_context(|| "Failed to get include path".to_string())?;
+        let include_path = crate::protoc::include_path()
+            .with_context(|| "Failed to get include path".to_string())?;
         let mut proto_path = rel_proto_path.to_str().unwrap();
         if proto_path.is_empty() {
             proto_path = "."
@@ -291,11 +291,7 @@ impl LibraryStore {
     }
 
     // Collect .proto files in a given path whilst excluding vendored ones
-    pub fn collect(
-        protos_dir: &Path,
-        lib_path: &Path,
-        exclude: &[String],
-    ) -> Result<Vec<String>> {
+    pub fn collect(protos_dir: &Path, lib_path: &Path, exclude: &[String]) -> Result<Vec<String>> {
         // Locate `.proto` files under current library
         let files = FileSystem::list_protos(protos_dir)
             .with_context(|| "failed to collect library .proto files".to_string())?;

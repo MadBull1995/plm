@@ -14,10 +14,7 @@
 
 use std::path::Path;
 
-use plm_core::{
-    library::store::LibraryStore, plm::library::v1::Dependency, FileSystem,
-    Manifest,
-};
+use plm_core::{library::store::LibraryStore, plm::library::v1::Dependency, FileSystem, Manifest};
 
 use crate::{
     registry::client::CliRegistryClientBuilder,
@@ -69,7 +66,7 @@ pub async fn install_command(
         //     full_or_partial: Some(plm_core::FullOrPartial::Full(lib_name.clone())),
         //     ..Default::default()
         // };
-        
+
         // let downloaded_lib = client.download(download_req).await?;
 
         // println!("{:?}", downloaded_lib);

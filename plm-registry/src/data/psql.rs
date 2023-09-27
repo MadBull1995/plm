@@ -14,8 +14,8 @@
 
 use crate::{diesel_migrations, models::Library};
 use diesel::prelude::*;
-use diesel::{pg::PgConnection, sql_types::Text};
 use diesel::sql_query;
+use diesel::{pg::PgConnection, sql_types::Text};
 use std::ops::DerefMut;
 use tokio::sync::Mutex;
 use tracing::debug;

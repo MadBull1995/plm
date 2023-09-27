@@ -18,10 +18,7 @@ use tonic::Code;
 
 use crate::{
     registry::client::CliRegistryClientBuilder,
-    utils::{
-        configs::CliConfigs,
-        prompter::Prompter,
-    },
+    utils::{configs::CliConfigs, prompter::Prompter},
 };
 
 pub async fn login_command(
@@ -36,7 +33,7 @@ pub async fn login_command(
     let mut client = client_builder.build().await?;
     let login = LoginRequest {
         username: username.to_string(),
-        token: token.to_string()
+        token: token.to_string(),
     };
 
     let login_response = client.login(login.clone()).await;

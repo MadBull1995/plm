@@ -39,8 +39,8 @@ pub struct ProtoLock {
 impl ProtoLock {
     // Read from lock file
     pub fn from_file<P: AsRef<Path>>(path: P) -> PlmResult<Self> {
-        let file_content = fs::read_file(path.as_ref().to_str().unwrap())
-            .map_err(PlmError::FileSystemError)?;
+        let file_content =
+            fs::read_file(path.as_ref().to_str().unwrap()).map_err(PlmError::FileSystemError)?;
         let proto_lock: ProtoLock = serde_json::from_str(&file_content)
             .map_err(|err| PlmError::SerializationError(err.into()))?;
         Ok(proto_lock)

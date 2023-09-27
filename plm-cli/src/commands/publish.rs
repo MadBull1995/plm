@@ -12,20 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 use anyhow::Result;
 
-use plm_core::{
-    library::store::LibraryStore,
-    Manifest, PublishRequest,
-};
 use crate::{
     registry::client::CliRegistryClientBuilder,
-    utils::{
-        configs::CliConfigs,
-        prompter::Prompter,
-    },
+    utils::{configs::CliConfigs, prompter::Prompter},
 };
+use plm_core::{library::store::LibraryStore, Manifest, PublishRequest};
 
 pub async fn publish_command(manifest: Manifest, configs: CliConfigs, token: String) -> Result<()> {
     let current_dir = &configs.current_dir;
@@ -40,9 +33,7 @@ pub async fn publish_command(manifest: Manifest, configs: CliConfigs, token: Str
         .with_addr(configs.registry)
         .with_token(token);
     let mut client = registry_client_builder.build().await?;
-    let publish = PublishRequest {
-        lib: Some(lib)
-    };
+    let publish = PublishRequest { lib: Some(lib) };
     client.publish(publish).await?;
 
     Prompter::task(4, 4, "Upload");

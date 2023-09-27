@@ -17,7 +17,7 @@ pub type PlmResult<T> = anyhow::Result<T, PlmError>;
 
 #[derive(thiserror::Error, Debug)]
 pub enum PlmError {
-    #[error("Some internal error occured: {0}")]
+    #[error("Some internal error occurred: {0}")]
     InternalError(String),
 
     #[error("Error on file system operation: {0:?}")]

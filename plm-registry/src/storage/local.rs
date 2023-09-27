@@ -17,10 +17,7 @@ use plm_core::{
     plm::{package::v1::File, registry::v1::Local},
     utils::fs,
 };
-use std::{
-    fs as _fs,
-    str,
-};
+use std::{fs as _fs, str};
 use tracing::{debug, error, info};
 
 use crate::{error::RegistryError, types::RegistryResult, RegistryStorage};
@@ -39,14 +36,10 @@ impl RegistryStorage for LocalStorage {
 
         // let protos_dir = fs::FileSystem::join_paths(self.storage.clone().registry_path, library);
         println!("{:?}", local_storage_path);
-        let protos =
-            LibraryStore::collect(&local_storage_path, local_storage_path.as_path(), &[])
-                .map_err(|e| {
-                    RegistryError::InvalidConfigSetup(format!(
-                        "unable to load protobuf files: {}",
-                        e
-                    ))
-                })?;
+        let protos = LibraryStore::collect(&local_storage_path, local_storage_path.as_path(), &[])
+            .map_err(|e| {
+                RegistryError::InvalidConfigSetup(format!("unable to load protobuf files: {}", e))
+            })?;
 
         println!("{:?}", protos);
 
