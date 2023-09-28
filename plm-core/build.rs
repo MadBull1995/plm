@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 // extern crate protoc_bin_vendored::{include_path, protoc_bin_path};
 
 pub(crate) fn main() -> Result<(), Box<dyn std::error::Error>> {

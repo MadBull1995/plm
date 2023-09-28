@@ -11,4 +11,4 @@ if ! command -V sudo; then
 fi
 sudo apt-get update
 sudo apt-get install -y --no-install-recommends \
-  protobuf-compiler
+  protobuf-compiler libpq-dev

@@ -38,12 +38,12 @@ pub struct LibraryStore;
 
 impl LibraryStore {
     /// Path to the proto directory
-    pub const PROTO_MODULES_PATH: &str = "proto_modules";
+    pub const PROTO_MODULES_PATH: &'static str = "proto_modules";
 
     /// Creates the expected directory structure for `plm`
     pub async fn create() -> Result<()> {
         let create = |dir: &'static str| async move {
-            let path = Path::new(dir.clone());
+            let path = Path::new(dir);
             fs::create_dir_all(dir).await.with_context(|| {
                 format!(
                     "Failed to create dependency folder {}",
