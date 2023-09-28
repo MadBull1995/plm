@@ -71,7 +71,7 @@ fn set_windows_exe_options() {
 
 fn git_revision_hash() -> Option<String> {
     let result = process::Command::new("git")
-        .args(&["rev-parse", "--short=10", "HEAD"])
+        .args(["rev-parse", "--short=10", "HEAD"])
         .output();
     result.ok().and_then(|output| {
         let v = String::from_utf8_lossy(&output.stdout).trim().to_string();
