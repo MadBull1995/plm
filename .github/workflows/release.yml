@@ -92,10 +92,16 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
+    - name: Make ubuntu-install-packages script executable
+      run: chmod +x ci/ubuntu-install-packages.sh
+
     - name: Install packages (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
       run: |
         ci/ubuntu-install-packages.sh
+
+    - name: Make macos-install-packages script executable
+      run: chmod +x ci/macos-install-packages.sh
 
     - name: Install packages (macOS)
       if: matrix.os == 'macos-latest'
@@ -137,6 +143,9 @@ jobs:
           rustembedded/cross:arm-unknown-linux-gnueabihf \
           arm-linux-gnueabihf-strip \
           plm-cli/target/arm-unknown-linux-gnueabihf/release/plm-cli
+
+    - name: Make cargo-out-dir script executable
+      run: chmod +x ci/cargo-out-dir.sh
 
     - name: Build archive
       shell: bash
