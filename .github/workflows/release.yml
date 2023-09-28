@@ -128,6 +128,19 @@ jobs:
         echo "target flag is: ${{ env.TARGET_FLAGS }}"
         echo "target dir is: ${{ env.TARGET_DIR }}"
 
+    # - name: Conditionally set PROTOC based on OS
+    #   run: |
+    #     if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+    #       echo "PROTOC=/usr/bin/protoc" >> $GITHUB_ENV
+    #     elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+    #       echo "PROTOC=/usr/local/bin/protoc" >> $GITHUB_ENV
+    #     fi
+
+    - name: Show protoc version
+      run: |
+        which protoc
+        protoc --version
+    
     - name: Build release binary
       run: ${{ env.CARGO }} build --verbose --release ${{ env.TARGET_FLAGS }}
 
