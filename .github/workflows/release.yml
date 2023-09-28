@@ -22,6 +22,24 @@ on:
     tags:
     - "[0-9]+.[0-9]+.[0-9]+"
 jobs:
+  crate-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Publish to crates.io
+        uses: actions-rs/cargo@v1
+        with:
+          command: publish
+          args: --token ${{ secrets.CRATES_IO_TOKEN }}
+
   create-release:
     name: create-release
     runs-on: ubuntu-latest
@@ -155,7 +173,7 @@ jobs:
 
     - name: Strip release binary (linux, macos and macos-arm)
       if: matrix.build == 'linux' || matrix.os == 'macos'
-      run: strip "./target/${{ matrix.target }}/release/plm-cli"
+      run: strip "./target/${{ matrix.target }}/release/plm"
 
     - name: Strip release binary (arm)
       if: matrix.build == 'linux-arm'
@@ -164,7 +182,7 @@ jobs:
           "$PWD/target:/target:Z" \
           rustembedded/cross:arm-unknown-linux-gnueabihf \
           arm-linux-gnueabihf-strip \
-          ./target/arm-unknown-linux-gnueabihf/release/plm-cli
+          ./target/arm-unknown-linux-gnueabihf/release/plm
 
     - name: Make cargo-out-dir script executable
       run: chmod +x ci/cargo-out-dir.sh
@@ -182,7 +200,7 @@ jobs:
         # cp complete/_plm "$staging/complete/"
 
         if [ "${{ matrix.os }}" = "windows-latest" ]; then
-          cp "./target/${{ matrix.target }}/release/plm-cli.exe" "$staging/"
+          cp "./target/${{ matrix.target }}/release/plm.exe" "$staging/"
           7z a "$staging.zip" "$staging"
           certutil -hashfile "$staging.zip" SHA256 > "$staging.zip.sha256"
           echo "ASSET=$staging.zip" >> $GITHUB_ENV
@@ -190,7 +208,7 @@ jobs:
         else
           # The man page is only generated on Unix systems. ¯\_(ツ)_/¯
           # cp "$outdir"/rg.1 "$staging/doc/"
-          cp "./target/${{ matrix.target }}/release/plm-cli" "$staging/"
+          cp "./target/${{ matrix.target }}/release/plm" "$staging/"
           tar czf "$staging.tar.gz" "$staging"
           shasum -a 256 "$staging.tar.gz" > "$staging.tar.gz.sha256"
           echo "ASSET=$staging.tar.gz" >> $GITHUB_ENV
