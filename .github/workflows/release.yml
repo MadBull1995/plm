@@ -70,7 +70,7 @@ jobs:
         - build: linux
           os: ubuntu-latest
           rust: nightly
-          target: arm-unknown-linux
+          target: arm-unknown-linux-gnueabihf
         - build: macos
           os: macos-latest
           rust: nightly

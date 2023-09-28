@@ -11,7 +11,7 @@ PLM is an open-source Protobuf Library Manager that allows developers to easily 
 ## Features
 - Setup Registry instance.
 - Publish your own libraries with a single command.
-- Setup a locl developmnet workspace.
+- Setup a locl workspace.
 - Install and manage dependencies with ease.
 - Secure user authentication.
 
