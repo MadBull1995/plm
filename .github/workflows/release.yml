@@ -34,11 +34,17 @@ jobs:
           toolchain: stable
           override: true
 
-      - name: Publish to crates.io
+      - name: Publish plm-core to crates.io
         uses: actions-rs/cargo@v1
         with:
           command: publish
-          args: --token ${{ secrets.CRATES_IO_TOKEN }}
+          args: --token ${{ secrets.CRATES_IO_TOKEN }} -p plm-core
+      
+      - name: Publish plm-cli to crates.io
+        uses: actions-rs/cargo@v1
+        with:
+          command: publish
+          args: --token ${{ secrets.CRATES_IO_TOKEN }} -p plm-cli
 
   create-release:
     name: create-release
@@ -47,7 +53,7 @@ jobs:
       # Set to force version number, e.g., when no tag exists.
       # PLM_VERSION: TEST-0.0.0
     outputs:
-      rg_version: ${{ env.PLM_VERSION }}
+      plm_version: ${{ env.PLM_VERSION }}
     steps:
       - uses: actions/checkout@v3
       - name: Get the release version from the tag
