@@ -1,4 +1,5 @@
 #!/bin/sh
 
 brew install protobuf
-brew install libpq
+brew install postgresql
+pip3 install psycopg2-binary

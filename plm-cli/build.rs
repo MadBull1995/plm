@@ -50,21 +50,21 @@ fn main() {
 fn set_windows_exe_options() {
     static MANIFEST: &str = "pkg/windows/Manifest.xml";
 
-    let Ok(target_os) = env::var("CARGO_CFG_TARGET_OS") else { 
+    let Ok(target_os) = env::var("CARGO_CFG_TARGET_OS") else {
         return;
     };
-    let Ok(target_env) = env::var("CARGO_CFG_TARGET_ENV") else { 
+    let Ok(target_env) = env::var("CARGO_CFG_TARGET_ENV") else {
         return;
     };
     if !(target_os == "windows" && target_env == "msvc") {
         return;
     }
 
-    let Ok(mut manifest) = env::current_dir() else { 
+    let Ok(mut manifest) = env::current_dir() else {
         return;
     };
     manifest.push(MANIFEST);
-    let Some(manifest) = manifest.to_str() else { 
+    let Some(manifest) = manifest.to_str() else {
         return;
     };
 
