@@ -10,5 +10,7 @@ if ! command -V sudo; then
   apt-get install -y --no-install-recommends sudo
 fi
 sudo apt-get update
+sudo apt-get remove -y libpq5
 sudo apt-get install -y --no-install-recommends \
   protobuf-compiler libpq-dev
+sudo apt install -y python3-psycopg2
