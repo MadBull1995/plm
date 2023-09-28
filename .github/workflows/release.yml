@@ -134,6 +134,7 @@ jobs:
         echo "target dir is: ${{ env.TARGET_DIR }}"
 
     - name: Conditionally set PROTOC based on OS
+      shell: bash
       run: |
         if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
           echo "PROTOC=/usr/bin/protoc" >> $GITHUB_ENV
@@ -154,7 +155,7 @@ jobs:
 
     - name: Strip release binary (linux, macos and macos-arm)
       if: matrix.build == 'linux' || matrix.os == 'macos'
-      run: strip "plm-cli/target/${{ matrix.target }}/release/plm-cli"
+      run: strip "./target/${{ matrix.target }}/release/plm-cli"
 
     - name: Strip release binary (arm)
       if: matrix.build == 'linux-arm'
@@ -163,7 +164,7 @@ jobs:
           "$PWD/target:/target:Z" \
           rustembedded/cross:arm-unknown-linux-gnueabihf \
           arm-linux-gnueabihf-strip \
-          plm-cli/target/arm-unknown-linux-gnueabihf/release/plm-cli
+          ./target/arm-unknown-linux-gnueabihf/release/plm-cli
 
     - name: Make cargo-out-dir script executable
       run: chmod +x ci/cargo-out-dir.sh
@@ -181,7 +182,7 @@ jobs:
         # cp complete/_plm "$staging/complete/"
 
         if [ "${{ matrix.os }}" = "windows-latest" ]; then
-          cp "plm-cli/target/${{ matrix.target }}/release/plm-cli.exe" "$staging/"
+          cp "./target/${{ matrix.target }}/release/plm-cli.exe" "$staging/"
           7z a "$staging.zip" "$staging"
           certutil -hashfile "$staging.zip" SHA256 > "$staging.zip.sha256"
           echo "ASSET=$staging.zip" >> $GITHUB_ENV
@@ -189,7 +190,7 @@ jobs:
         else
           # The man page is only generated on Unix systems. ¯\_(ツ)_/¯
           # cp "$outdir"/rg.1 "$staging/doc/"
-          cp "plm-cli/target/${{ matrix.target }}/release/plm-cli" "$staging/"
+          cp "./target/${{ matrix.target }}/release/plm-cli" "$staging/"
           tar czf "$staging.tar.gz" "$staging"
           shasum -a 256 "$staging.tar.gz" > "$staging.tar.gz.sha256"
           echo "ASSET=$staging.tar.gz" >> $GITHUB_ENV
