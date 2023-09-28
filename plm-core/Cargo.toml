@@ -27,3 +27,4 @@ argon2 = "0.5.2"
 
 [build-dependencies]
 tonic-build = "0.10.0"
+protoc-bin-vendored = { version = "3.0.0" }

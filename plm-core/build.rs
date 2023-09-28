@@ -12,7 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
+// extern crate protoc_bin_vendored::{include_path, protoc_bin_path};
+
 pub(crate) fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // protoc_bin_vendored
+    std::env::set_var("PROTOC", protoc_bin_vendored::protoc_bin_path().unwrap());
+
     tonic_build::configure()
         .build_client(true)
         .build_server(true)
