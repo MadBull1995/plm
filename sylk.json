@@ -352,6 +352,17 @@
                             "type": "descriptor",
                             "kind": "field",
                             "index": 5
+                        },
+                        {
+                            "name": "dependencies",
+                            "fullName": "plm.library.v1.Library.dependencies",
+                            "fieldType": "TYPE_MAP",
+                            "label": "LABEL_OPTIONAL",
+                            "keyType": "TYPE_STRING",
+                            "valueType": "TYPE_STRING",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 6
                         }
                     ],
                     "type": "descriptor",

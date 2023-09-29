@@ -90,6 +90,16 @@ impl LibraryStore {
             }
         }
 
+        let manifest = crate::Manifest {
+            name: library.clone().name,
+            version: library.clone().version,
+            dependencies: HashMap::new(),
+            ..Default::default()
+        };
+        let manifest_path = FileSystem::join_paths(lib_dir.clone(), "proto-package.json");
+
+        FileSystem::write_json(manifest_path.to_str().unwrap(), &manifest)?;
+
         debug!(
             "unpacked {}@{} into {}",
             library.name,
@@ -104,11 +114,11 @@ impl LibraryStore {
     pub async fn install<R: crate::registry::Registry>(
         dependency: Dependency,
         registry: &mut R,
-    ) -> Result<()> {
+    ) -> Result<Library> {
         let library = registry.download(dependency).await?;
 
         debug!("downloaded: {}:{}", library.name, library.version);
-
+        let binding = library.clone();
         Self::unpack(&library).await?;
 
         let tree = format!(":: installed {}@{}", library.name, library.version);
@@ -122,7 +132,7 @@ impl LibraryStore {
         let _dependency_count = dependencies.len();
 
         for (index, dependency) in dependencies.into_iter().enumerate() {
-            println!("i: {} - {:?}", index, dependency);
+            info!("i: {} - {:?}", index, dependency);
             // if let Ok(manifest) = Self::resolve(&dependency.package).await {
             // let existing = manifest.package.wrap_err(eyre::eyre!(
             //     "Found installed manifest for {} but it is malformed",
@@ -157,8 +167,8 @@ impl LibraryStore {
         }
 
         info!("{tree}");
-
-        Ok(())
+        
+        Ok(binding)
     }
 
     /// Uninstalls a package from the local file system
@@ -277,6 +287,7 @@ impl LibraryStore {
                 fd_set: fd_set_to_bytes(&fd),
                 metadata: lib_md,
                 packages: pkgs.collect(),
+                dependencies: manifest.dependencies
             };
 
             Ok(lib)
@@ -285,9 +296,8 @@ impl LibraryStore {
 
     /// Directory for the vendored installation of a package
     pub fn locate(library: &Dependency) -> PathBuf {
-        PathBuf::from(Self::PROTO_MODULES_PATH)
-            .join(library.library_id.clone())
-            .join(library.version.clone())
+        PathBuf::from(Self::PROTO_MODULES_PATH).join(library.library_id.clone())
+        // .join(library.version.clone())
     }
 
     // Collect .proto files in a given path whilst excluding vendored ones

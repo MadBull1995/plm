@@ -53,7 +53,7 @@ pub async fn install_command(
             .with_token(token);
         let mut client = registry_client_builder.build().await?;
 
-        LibraryStore::install(
+        let lib = LibraryStore::install(
             Dependency {
                 library_id: lib_name.clone(),
                 version: "".to_string(),
@@ -61,7 +61,6 @@ pub async fn install_command(
             &mut client,
         )
         .await?;
-
         // let download_req = DownloadRequest {
         //     full_or_partial: Some(plm_core::FullOrPartial::Full(lib_name.clone())),
         //     ..Default::default()
@@ -76,7 +75,7 @@ pub async fn install_command(
         // Add library to the proto-lock file
         let installed_lib = Library {
             name: lib_name,
-            version: "0.0.1".to_string(),
+            version: lib.version,
             dependencies: resolved_deps,
         };
 
@@ -84,7 +83,6 @@ pub async fn install_command(
         proto_lock.add_library(installed_lib.clone());
         proto_lock.validate()?;
         proto_lock.to_file(proto_lock_path)?;
-        dbg!(proto_lock);
 
         manifest
             .dependencies

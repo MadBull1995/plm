@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::sync::Arc;
+use std::{sync::Arc, collections::HashMap};
 
 use diesel::result::{DatabaseErrorKind, Error};
 use plm_core::{
@@ -79,6 +79,7 @@ impl registry_service_server::RegistryService for RegistryService {
                                     ))),
                                     Some(mut version) => {
                                         lib.name = version.0.name;
+                                        // lib.dependencies = HashMap::with_capacity(capacity)
                                         lib.version =
                                             version.1.pop().unwrap().version_number.clone();
                                         let mut lib_full_path = String::new();

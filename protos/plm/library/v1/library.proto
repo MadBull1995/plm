@@ -28,6 +28,7 @@ message Library {
 	repeated plm.package.v1.Package packages = 3;
 	map<string, string> metadata = 4;
 	bytes fd_set = 5;
+	map<string, string> dependencies = 6;
 }
 
 message Dependency {

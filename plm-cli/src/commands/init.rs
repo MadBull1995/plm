@@ -30,8 +30,11 @@ pub async fn init_command(init: &Init) -> PlmResult<()> {
     let project_name = if let Some(name) = &init.library_name {
         name.clone()
     } else {
+        let current_dir_name = FileSystem::get_current_dir_name()
+            .map_err(|e| PlmError::InternalError(e.to_string()))?;
         Input::with_theme(&plm_theme())
             .with_prompt("Enter your project name")
+            .default(current_dir_name.unwrap_or_default())
             .interact()
             .map_err(|e| PlmError::InternalError(e.to_string()))?
     };
@@ -63,7 +66,7 @@ pub async fn init_command(init: &Init) -> PlmResult<()> {
         .description
         .clone()
         .unwrap_or_else(|| "Awesome Protobuf Package".to_string());
-    manifest.src_dir = init.src_dir.clone().unwrap_or_default();
+    manifest.src_dir = init.src_dir.clone().unwrap_or("protos/".to_string());
 
     // Gets a value for the "list" argument
     manifest.exclude = if let Some(list_str) = init.clone().exclude {

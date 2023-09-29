@@ -13,12 +13,13 @@
 // limitations under the License.
 
 use std::env;
+use std::ffi::OsStr;
 use std::fs::{self, File};
 use std::io::{self, BufRead, BufReader, Read, Write};
 use std::path::{Path, PathBuf};
 
 use serde::Serialize;
-use tracing::trace;
+use tracing::{error, trace};
 
 pub const PLM_CONFIG_FILE: &str = ".plmrc";
 
@@ -141,6 +142,23 @@ impl FileSystem {
         let mut file = File::create(file_path)?;
         file.write_all(yaml_string.as_bytes())?;
         Ok(())
+    }
+
+    pub fn get_current_dir_name() -> io::Result<Option<String>> {
+        // Get the current directory as a PathBuf
+        let current_dir = env::current_dir()?;
+
+        // Extract the last component as an Option<&OsStr>
+        let dir_name_os_str: Option<&OsStr> = current_dir.file_name();
+
+        // Convert the OsStr to a String, if it exists
+        if let Some(dir_name) = dir_name_os_str {
+            let dir_name_str = dir_name.to_str().unwrap_or("Invalid UTF-8 sequence");
+            Ok(Some(dir_name_str.to_string()))
+        } else {
+            error!("Failed to get current directory name.");
+            Ok(None)
+        }
     }
 
     pub fn current_dir() -> io::Result<PathBuf> {
