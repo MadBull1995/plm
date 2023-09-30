@@ -3,3 +3,7 @@
 /data/registry/libs
 /data/seed
 .env
+/generated/
+/bin/
+.sylk/
+.plm/

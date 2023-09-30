@@ -20,7 +20,12 @@ use crate::{
 };
 use plm_core::{library::store::LibraryStore, Manifest, PublishRequest};
 
-pub async fn publish_command(manifest: Manifest, configs: CliConfigs, token: String, preserve_imports: bool) -> Result<()> {
+pub async fn publish_command(
+    manifest: Manifest,
+    configs: CliConfigs,
+    token: String,
+    preserve_imports: bool,
+) -> Result<()> {
     let current_dir = &configs.current_dir;
 
     Prompter::info(format!("publishing: {:<15}", manifest.name).as_str());

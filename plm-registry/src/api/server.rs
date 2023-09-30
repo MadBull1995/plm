@@ -16,9 +16,8 @@ use std::{env, net::SocketAddr, sync::Arc};
 
 // use tower::{ServiceBuilder, layer::{util::Stack, LayerFn}};
 use plm_core::{registry_service_server, user_service_server};
-use tonic::{transport::Server as GrpcServer, service::{interceptor::InterceptedService, Interceptor}};
+use tonic::transport::Server as GrpcServer;
 use tracing::{debug, warn};
-
 
 use crate::{
     psql::QueryLayer,
@@ -92,15 +91,13 @@ impl RegistryServer {
         let svc = registry_service_server::RegistryServiceServer::new(self.registry.clone())
             .max_decoding_message_size(100 * 1024 * 1024)
             .max_encoding_message_size(100 * 1024 * 1024);
-        
+
         // registry_service_server::RegistryServiceServer::with_interceptor(
         //     svc.into(),
         //     auth_guard,
         // );
         let server = server_builder
-            .add_service(
-                svc,
-            )
+            .add_service(svc)
             .add_service(user_service_server::UserServiceServer::new(
                 self.user.clone(),
             ))
@@ -126,11 +123,11 @@ use crate::utils::auth;
 /// This function will get called on each inbound request, if a `Status`
 /// is returned, it will cancel the request and return that status to the
 /// client.
-fn auth_guard(req: tonic::Request<()>) -> Result<tonic::Request<()>, tonic::Status> {
+fn _auth_guard(req: tonic::Request<()>) -> Result<tonic::Request<()>, tonic::Status> {
     warn!("Intercepting request: {:?}", req);
 
     match req.metadata().get("authorization") {
-        Some(t) => match extract_bearer_token(t.to_str().unwrap()) {
+        Some(t) => match _extract_bearer_token(t.to_str().unwrap()) {
             None => Err(tonic::Status::unauthenticated(
                 "Invalid token format should be: Bearer <token>".to_string(),
             )),
@@ -148,7 +145,7 @@ fn auth_guard(req: tonic::Request<()>) -> Result<tonic::Request<()>, tonic::Stat
     }
 }
 
-fn extract_bearer_token(s: &str) -> Option<&str> {
+fn _extract_bearer_token(s: &str) -> Option<&str> {
     if s.starts_with("Bearer ") && s.len() > "Bearer ".len() {
         Some(&s["Bearer ".len()..])
     } else {

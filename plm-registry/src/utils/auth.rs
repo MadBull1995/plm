@@ -34,7 +34,9 @@ pub fn create_jwt_token(
         .expect("Time went backwards");
 
     // Set the token to expire in 24 hour (3600 seconds * 24)
-    let expiration: usize = (since_the_epoch.as_secs() + (3600 * 24)).try_into().unwrap();
+    let expiration: usize = (since_the_epoch.as_secs() + (3600 * 24))
+        .try_into()
+        .unwrap();
     let claims = Claims {
         sub: format!("{}", user_id.to_owned()),
         exp: expiration,

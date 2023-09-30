@@ -63,7 +63,7 @@ impl QueryLayer {
             .filter(username.eq(user_name))
             .select(User::as_select())
             .first(c.deref_mut())
-            .optional() // This allows for returning an Option<Post>, otherwise it will throw an error
+            .optional()
     }
 
     pub async fn create_user(&self, user: &plm_core::CreateUserRequest) -> QueryResult<User> {
@@ -106,6 +106,68 @@ impl QueryLayer {
             .get_result(conn)
     }
 
+    /// Fetch library metadata by dependency ID
+    pub async fn get_library_by_dependency(&self, dep_id: i32) -> QueryResult<Option<Library>> {
+        use crate::schema::{dependencies, libraries, versions};
+
+        let mut c = self.conn.lock().await;
+
+        // Find the version_id associated with the dependency
+        let dependency: Option<Dependency> = dependencies::table
+            .find(dep_id)
+            .first(c.deref_mut())
+            .optional()?;
+
+        match dependency {
+            Some(dep) => {
+                // Find the library metadata associated with the version
+                let lib: Option<Library> = versions::table
+                    .inner_join(libraries::table)
+                    .filter(versions::id.eq(dep.version_id))
+                    .select(Library::as_select())
+                    .first(c.deref_mut())
+                    .optional()?;
+
+                Ok(lib)
+            }
+            None => Ok(None),
+        }
+    }
+
+    /// Fetch library metadata by version ID
+    pub async fn get_library_by_version(
+        &self,
+        version_id: i32,
+    ) -> QueryResult<Option<(Library, String)>> {
+        use crate::schema::{libraries, versions};
+
+        let mut c = self.conn.lock().await;
+
+        // Find the library metadata associated with the version
+        let result: Option<(Library, Version)> = versions::table
+            .inner_join(libraries::table)
+            .filter(versions::id.eq(version_id))
+            .select((Library::as_select(), Version::as_select()))
+            .first(c.deref_mut())
+            .optional()?;
+
+        match result {
+            Some((lib, ver)) => Ok(Some((lib, ver.version_number))),
+            None => Ok(None),
+        }
+    }
+
+    pub async fn get_library(&self, lib_name: String) -> QueryResult<Option<Library>> {
+        use crate::schema::libraries::dsl::*;
+        let mut c = self.conn.lock().await;
+
+        libraries
+            .filter(name.eq(lib_name))
+            .select(Library::as_select())
+            .first(c.deref_mut())
+            .optional()
+    }
+
     /// Retrieve all versions for a specific library
     pub async fn get_versions_by_library(&self, lib_id: i32) -> QueryResult<Vec<Version>> {
         use crate::schema::versions;
@@ -133,6 +195,19 @@ impl QueryLayer {
                 dependencies::dependency_range,
             ))
             .get_result(conn)
+    }
+
+    /// Retrieve dependencies for a specific version
+    pub async fn get_async_dependencies_by_version(
+        &self,
+        ver_id: i32,
+    ) -> QueryResult<Vec<Dependency>> {
+        use crate::schema::dependencies;
+        let mut c = self.conn.lock().await;
+
+        dependencies::table
+            .filter(dependencies::version_id.eq(ver_id))
+            .load::<Dependency>(c.deref_mut())
     }
 
     /// Retrieve dependencies for a specific version

@@ -12,12 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 
 use diesel::result::{DatabaseErrorKind, Error};
 use plm_core::{
-    registry_service_server, user_service_server, utils::auth, CreateUserRequest, DownloadRequest,
-    DownloadResponse, FullOrPartial, Library, LoginRequest, LoginResponse, PublishRequest, User,
+    plm::registry::v1::{MetadataRequest, MetadataResponse, Version},
+    registry_service_server, user_service_server,
+    utils::auth,
+    CreateUserRequest, DownloadRequest, DownloadResponse, FullOrPartial, Library, LoginRequest,
+    LoginResponse, PublishRequest, User,
 };
 use tonic::{async_trait, Request, Response, Status};
 use tracing::{debug, error, info, warn};
@@ -37,6 +40,84 @@ pub struct RegistryService {
 
 #[async_trait]
 impl registry_service_server::RegistryService for RegistryService {
+    async fn metadata(
+        &self,
+        request: Request<MetadataRequest>,
+    ) -> Result<Response<MetadataResponse>, tonic::Status> {
+        let md_req = request.into_inner();
+        info!("metadata lib: {:?}", md_req.clone());
+        let lib = match self.data.get_library(md_req.library.clone()).await {
+            Ok(Some(lib)) => lib,
+            Ok(None) => {
+                return Err(tonic::Status::not_found(format!(
+                    "Library: {} doesn't exist, bug the author - or grab the package name.",
+                    md_req.library
+                )))
+            }
+            Err(e) => {
+                return Err(tonic::Status::internal(format!(
+                    "Failed to fetch metadata for library \"{}\": {:?}",
+                    md_req.library, e
+                )))
+            }
+        };
+
+        let versions = self
+            .data
+            .get_versions_by_library(lib.lib_id)
+            .await
+            .map_err(|e| {
+                tonic::Status::internal(format!(
+                    "Failed to fetch metadata for library \"{}\": {:?}",
+                    md_req.library, e
+                ))
+            })?;
+
+        let mut hashed_versions = HashMap::new();
+
+        for ver in versions {
+            let ver_deps = self.data.get_async_dependencies_by_version(ver.id)
+                .await
+                .map_err(|e| tonic::Status::internal(format!("Failed to fetch library \"{}\" metadata - errored on version {} dependencies. {:?}", md_req.library, ver.id, e)))?;
+
+            let mut dependencies = HashMap::new();
+
+            for d in ver_deps {
+                match self
+                    .data
+                    .get_library_by_version(d.dependent_version_id)
+                    .await
+                {
+                    Ok(Some((dlib, version))) => {
+                        dependencies.insert(dlib.name.clone(), version.clone());
+                    }
+                    Ok(None) => {
+                        error!("Failed to fetch library \"{}\" metadata - could not find dependency {}", md_req.library, d.id);
+                    }
+                    Err(e) => {
+                        error!("Failed to fetch library \"{}\" metadata - errored on version {} dependency {}. {:?}", md_req.library, ver.id, d.id, e);
+                    }
+                }
+            }
+
+            let version = Version {
+                name: lib.name.clone(),
+                version: ver.version_number.clone(),
+                dependencies,
+            };
+
+            hashed_versions.insert(ver.version_number.clone(), version);
+        }
+
+        let md_res = MetadataResponse {
+            name: lib.name,
+            description: "".to_string(),
+            versions: hashed_versions,
+        };
+
+        Ok(Response::new(md_res))
+    }
+
     async fn download(
         &self,
         request: Request<DownloadRequest>,

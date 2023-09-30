@@ -7,7 +7,7 @@
         "host": "localhost",
         "port": 44880,
         "codeBasePath": "generated",
-        "license": "Copyright 2023 Sylk Technologies\n\n Licensed under the Apache License, Version 2.0 (the \"License\");\nyou may not use this file except in compliance with the License.\nYou may obtain a copy of the License at\n\n\thttp://www.apache.org/licenses/LICENSE-2.0\n\nUnless required by applicable law or agreed to in writing, software\ndistributed under the License is distributed on an \"AS IS\" BASIS,\nWITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\nSee the License for the specific language governing permissions and\nlimitations under the License."
+        "license": "// Copyright 2023 Sylk Technologies\n// Licensed under the Apache License, Version 2.0 (the \"License\");\n// you may not use this file except in compliance with the License.\n// You may obtain a copy of the License at\n//\n//\thttp://www.apache.org/licenses/LICENSE-2.0\n//\n// Unless required by applicable law or agreed to in writing, software\n// distributed under the License is distributed on an \"AS IS\" BASIS,\n// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n// See the License for the specific language governing permissions and\n// limitations under the License."
     },
     "sylkVersion": "0.4.1",
     "project": {
@@ -25,6 +25,522 @@
         }
     },
     "packages": {
+        "plm/registry/v1": {
+            "name": "registry",
+            "package": "plm.registry.v1",
+            "messages": [
+                {
+                    "name": "S3",
+                    "fullName": "plm.registry.v1.S3",
+                    "fields": [
+                        {
+                            "name": "bucket_name",
+                            "fullName": "plm.registry.v1.S3.bucket_name",
+                            "description": "The `Simple Storage Service` (s3) bucket name",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message",
+                    "tag": "storage"
+                },
+                {
+                    "name": "Local",
+                    "fullName": "plm.registry.v1.Local",
+                    "fields": [
+                        {
+                            "name": "registry_path",
+                            "fullName": "plm.registry.v1.Local.registry_path",
+                            "description": "The full path to the local directory to store libraries in",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message",
+                    "tag": "storage"
+                },
+                {
+                    "name": "Storage",
+                    "fullName": "plm.registry.v1.Storage",
+                    "fields": [
+                        {
+                            "name": "storage_backend",
+                            "fullName": "plm.registry.v1.Storage.storage_backend",
+                            "fieldType": "TYPE_ONEOF",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1,
+                            "oneofFields": [
+                                {
+                                    "name": "local",
+                                    "fullName": "plm.registry.v1.Storage.storage_backend.local",
+                                    "fieldType": "TYPE_MESSAGE",
+                                    "label": "LABEL_OPTIONAL",
+                                    "messageType": "plm.registry.v1.Local",
+                                    "index": 1,
+                                    "kind": "field"
+                                },
+                                {
+                                    "name": "s3",
+                                    "fullName": "plm.registry.v1.Storage.storage_backend.s3",
+                                    "fieldType": "TYPE_MESSAGE",
+                                    "label": "LABEL_OPTIONAL",
+                                    "messageType": "plm.registry.v1.S3",
+                                    "index": 2,
+                                    "kind": "field"
+                                }
+                            ]
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message",
+                    "tag": "storage"
+                },
+                {
+                    "name": "Server",
+                    "fullName": "plm.registry.v1.Server",
+                    "fields": [
+                        {
+                            "name": "port",
+                            "fullName": "plm.registry.v1.Server.port",
+                            "fieldType": "TYPE_UINT32",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        },
+                        {
+                            "name": "host",
+                            "fullName": "plm.registry.v1.Server.host",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 2
+                        },
+                        {
+                            "name": "log_level",
+                            "fullName": "plm.registry.v1.Server.log_level",
+                            "fieldType": "TYPE_ENUM",
+                            "label": "LABEL_OPTIONAL",
+                            "enumType": "plm.registry.v1.Server.LogLevel",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 3
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message",
+                    "tag": "server",
+                    "inlines": [
+                        {
+                            "@type": "type.googleapis.com/sylk.SylkEnum.v2.SylkEnum",
+                            "name": "LogLevel",
+                            "fullName": "plm.registry.v1.Server.LogLevel",
+                            "values": [
+                                {
+                                    "name": "INFO",
+                                    "fullName": "plm.registry.v1.Server.LogLevel.INFO",
+                                    "type": "descriptor",
+                                    "kind": "enum_value"
+                                },
+                                {
+                                    "name": "DEBUG",
+                                    "fullName": "plm.registry.v1.Server.LogLevel.DEBUG",
+                                    "index": 1,
+                                    "number": 1,
+                                    "type": "descriptor",
+                                    "kind": "enum_value"
+                                },
+                                {
+                                    "name": "TRACE",
+                                    "fullName": "plm.registry.v1.Server.LogLevel.TRACE",
+                                    "index": 2,
+                                    "number": 2,
+                                    "type": "descriptor",
+                                    "kind": "enum_value"
+                                }
+                            ],
+                            "type": "descriptor",
+                            "kind": "enum",
+                            "tag": "server"
+                        }
+                    ]
+                },
+                {
+                    "name": "Data",
+                    "fullName": "plm.registry.v1.Data",
+                    "fields": [
+                        {
+                            "name": "host",
+                            "fullName": "plm.registry.v1.Data.host",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        },
+                        {
+                            "name": "username",
+                            "fullName": "plm.registry.v1.Data.username",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 2
+                        },
+                        {
+                            "name": "password",
+                            "fullName": "plm.registry.v1.Data.password",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 3
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message",
+                    "tag": "data"
+                },
+                {
+                    "name": "Config",
+                    "fullName": "plm.registry.v1.Config",
+                    "fields": [
+                        {
+                            "name": "storage",
+                            "fullName": "plm.registry.v1.Config.storage",
+                            "fieldType": "TYPE_MESSAGE",
+                            "label": "LABEL_OPTIONAL",
+                            "messageType": "plm.registry.v1.Storage",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        },
+                        {
+                            "name": "server",
+                            "fullName": "plm.registry.v1.Config.server",
+                            "fieldType": "TYPE_MESSAGE",
+                            "label": "LABEL_OPTIONAL",
+                            "messageType": "plm.registry.v1.Server",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 2
+                        },
+                        {
+                            "name": "data",
+                            "fullName": "plm.registry.v1.Config.data",
+                            "fieldType": "TYPE_MESSAGE",
+                            "label": "LABEL_OPTIONAL",
+                            "messageType": "plm.registry.v1.Data",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 3
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message",
+                    "tag": "config"
+                },
+                {
+                    "name": "PartialDownloadRequest",
+                    "fullName": "plm.registry.v1.PartialDownloadRequest",
+                    "fields": [
+                        {
+                            "name": "name",
+                            "fullName": "plm.registry.v1.PartialDownloadRequest.name",
+                            "description": "The library full name e.g: 'some_package' / '@org/some_package'",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        },
+                        {
+                            "name": "packages",
+                            "fullName": "plm.registry.v1.PartialDownloadRequest.packages",
+                            "description": "A list of full 'library/package' names",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_REPEATED",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 2
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message"
+                },
+                {
+                    "name": "DownloadRequest",
+                    "fullName": "plm.registry.v1.DownloadRequest",
+                    "fields": [
+                        {
+                            "name": "compression",
+                            "fullName": "plm.registry.v1.DownloadRequest.compression",
+                            "fieldType": "TYPE_ENUM",
+                            "label": "LABEL_OPTIONAL",
+                            "enumType": "plm.registry.v1.Compressions",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 3
+                        },
+                        {
+                            "name": "full_or_partial",
+                            "fullName": "plm.registry.v1.DownloadRequest.full_or_partial",
+                            "fieldType": "TYPE_ONEOF",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 2,
+                            "oneofFields": [
+                                {
+                                    "name": "full",
+                                    "fullName": "plm.registry.v1.DownloadRequest.full_or_partial.full",
+                                    "fieldType": "TYPE_STRING",
+                                    "label": "LABEL_OPTIONAL",
+                                    "index": 1,
+                                    "kind": "oneof"
+                                },
+                                {
+                                    "name": "partial",
+                                    "fullName": "plm.registry.v1.DownloadRequest.full_or_partial.partial",
+                                    "fieldType": "TYPE_MESSAGE",
+                                    "label": "LABEL_OPTIONAL",
+                                    "messageType": "plm.registry.v1.PartialDownloadRequest",
+                                    "index": 2,
+                                    "kind": "oneof"
+                                }
+                            ]
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message"
+                },
+                {
+                    "name": "DownloadResponse",
+                    "fullName": "plm.registry.v1.DownloadResponse",
+                    "fields": [
+                        {
+                            "name": "protobuf_or_gz",
+                            "fullName": "plm.registry.v1.DownloadResponse.protobuf_or_gz",
+                            "fieldType": "TYPE_ONEOF",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 2,
+                            "oneofFields": [
+                                {
+                                    "name": "protobuf",
+                                    "fullName": "plm.registry.v1.DownloadResponse.protobuf_or_gz.protobuf",
+                                    "fieldType": "TYPE_MESSAGE",
+                                    "label": "LABEL_OPTIONAL",
+                                    "messageType": "plm.library.v1.Library",
+                                    "index": 1,
+                                    "kind": "oneof"
+                                },
+                                {
+                                    "name": "gz",
+                                    "fullName": "plm.registry.v1.DownloadResponse.protobuf_or_gz.gz",
+                                    "fieldType": "TYPE_BYTES",
+                                    "label": "LABEL_OPTIONAL",
+                                    "index": 2,
+                                    "kind": "oneof"
+                                }
+                            ]
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message"
+                },
+                {
+                    "name": "PublishRequest",
+                    "fullName": "plm.registry.v1.PublishRequest",
+                    "fields": [
+                        {
+                            "name": "lib",
+                            "fullName": "plm.registry.v1.PublishRequest.lib",
+                            "fieldType": "TYPE_MESSAGE",
+                            "label": "LABEL_OPTIONAL",
+                            "messageType": "plm.library.v1.Library",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message"
+                },
+                {
+                    "name": "MetadataRequest",
+                    "fullName": "plm.registry.v1.MetadataRequest",
+                    "fields": [
+                        {
+                            "name": "library",
+                            "fullName": "plm.registry.v1.MetadataRequest.library",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message"
+                },
+                {
+                    "name": "Version",
+                    "fullName": "plm.registry.v1.Version",
+                    "fields": [
+                        {
+                            "name": "name",
+                            "fullName": "plm.registry.v1.Version.name",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        },
+                        {
+                            "name": "version",
+                            "fullName": "plm.registry.v1.Version.version",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 2
+                        },
+                        {
+                            "name": "dependencies",
+                            "fullName": "plm.registry.v1.Version.dependencies",
+                            "fieldType": "TYPE_MAP",
+                            "label": "LABEL_OPTIONAL",
+                            "keyType": "TYPE_STRING",
+                            "valueType": "TYPE_STRING",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 3
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message"
+                },
+                {
+                    "name": "MetadataResponse",
+                    "fullName": "plm.registry.v1.MetadataResponse",
+                    "fields": [
+                        {
+                            "name": "name",
+                            "fullName": "plm.registry.v1.MetadataResponse.name",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 1
+                        },
+                        {
+                            "name": "description",
+                            "fullName": "plm.registry.v1.MetadataResponse.description",
+                            "fieldType": "TYPE_STRING",
+                            "label": "LABEL_OPTIONAL",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 2
+                        },
+                        {
+                            "name": "versions",
+                            "fullName": "plm.registry.v1.MetadataResponse.versions",
+                            "fieldType": "TYPE_MAP",
+                            "label": "LABEL_OPTIONAL",
+                            "keyType": "TYPE_STRING",
+                            "valueType": "TYPE_MESSAGE",
+                            "messageType": "plm.registry.v1.Version",
+                            "type": "descriptor",
+                            "kind": "field",
+                            "index": 3
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "message"
+                }
+            ],
+            "enums": [
+                {
+                    "name": "Compressions",
+                    "fullName": "plm.registry.v1.Compressions",
+                    "values": [
+                        {
+                            "name": "PROTOBUF",
+                            "fullName": "plm.registry.v1.Compressions.PROTOBUF",
+                            "type": "descriptor",
+                            "kind": "enum_value"
+                        },
+                        {
+                            "name": "GZ",
+                            "fullName": "plm.registry.v1.Compressions.GZ",
+                            "index": 1,
+                            "number": 1,
+                            "type": "descriptor",
+                            "kind": "enum_value"
+                        }
+                    ],
+                    "type": "descriptor",
+                    "kind": "enum"
+                }
+            ],
+            "type": "package",
+            "dependencies": [
+                "plm.library.v1",
+                "google.protobuf"
+            ],
+            "extensions": {
+                "files": {
+                    "registry": {},
+                    "server": {}
+                }
+            },
+            "services": [
+                {
+                    "name": "RegistryService",
+                    "fullName": "plm.registry.v1.RegistryService",
+                    "methods": [
+                        {
+                            "name": "Metadata",
+                            "fullName": "plm.registry.v1.RegistryService.Metadata",
+                            "inputType": "plm.registry.v1.MetadataRequest",
+                            "outputType": "plm.registry.v1.MetadataResponse",
+                            "type": "descriptor",
+                            "kind": "method"
+                        },
+                        {
+                            "name": "Download",
+                            "fullName": "plm.registry.v1.RegistryService.Download",
+                            "inputType": "plm.registry.v1.DownloadRequest",
+                            "outputType": "plm.registry.v1.DownloadResponse",
+                            "type": "descriptor",
+                            "kind": "method"
+                        },
+                        {
+                            "name": "Publish",
+                            "fullName": "plm.registry.v1.RegistryService.Publish",
+                            "inputType": "plm.registry.v1.PublishRequest",
+                            "outputType": "google.protobuf.Empty",
+                            "type": "descriptor",
+                            "kind": "method"
+                        }
+                    ],
+                    "type": "service"
+                }
+            ]
+        },
         "plm/package/v1": {
             "name": "package",
             "package": "plm.package.v1",
@@ -401,421 +917,6 @@
             "dependencies": [
                 "plm.package.v1",
                 "plm.library.v1.Library"
-            ]
-        },
-        "plm/registry/v1": {
-            "name": "registry",
-            "package": "plm.registry.v1",
-            "messages": [
-                {
-                    "name": "S3",
-                    "fullName": "plm.registry.v1.S3",
-                    "fields": [
-                        {
-                            "name": "bucket_name",
-                            "fullName": "plm.registry.v1.S3.bucket_name",
-                            "description": "The `Simple Storage Service` (s3) bucket name",
-                            "fieldType": "TYPE_STRING",
-                            "label": "LABEL_OPTIONAL",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 1
-                        }
-                    ],
-                    "type": "descriptor",
-                    "kind": "message",
-                    "tag": "storage"
-                },
-                {
-                    "name": "Local",
-                    "fullName": "plm.registry.v1.Local",
-                    "fields": [
-                        {
-                            "name": "registry_path",
-                            "fullName": "plm.registry.v1.Local.registry_path",
-                            "description": "The full path to the local directory to store libraries in",
-                            "fieldType": "TYPE_STRING",
-                            "label": "LABEL_OPTIONAL",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 1
-                        }
-                    ],
-                    "type": "descriptor",
-                    "kind": "message",
-                    "tag": "storage"
-                },
-                {
-                    "name": "Storage",
-                    "fullName": "plm.registry.v1.Storage",
-                    "fields": [
-                        {
-                            "name": "storage_backend",
-                            "fullName": "plm.registry.v1.Storage.storage_backend",
-                            "fieldType": "TYPE_ONEOF",
-                            "label": "LABEL_OPTIONAL",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 1,
-                            "oneofFields": [
-                                {
-                                    "name": "local",
-                                    "fullName": "plm.registry.v1.Storage.storage_backend.local",
-                                    "fieldType": "TYPE_MESSAGE",
-                                    "label": "LABEL_OPTIONAL",
-                                    "messageType": "plm.registry.v1.Local",
-                                    "index": 1,
-                                    "kind": "field"
-                                },
-                                {
-                                    "name": "s3",
-                                    "fullName": "plm.registry.v1.Storage.storage_backend.s3",
-                                    "fieldType": "TYPE_MESSAGE",
-                                    "label": "LABEL_OPTIONAL",
-                                    "messageType": "plm.registry.v1.S3",
-                                    "index": 2,
-                                    "kind": "field"
-                                }
-                            ]
-                        }
-                    ],
-                    "type": "descriptor",
-                    "kind": "message",
-                    "tag": "storage"
-                },
-                {
-                    "name": "Server",
-                    "fullName": "plm.registry.v1.Server",
-                    "fields": [
-                        {
-                            "name": "port",
-                            "fullName": "plm.registry.v1.Server.port",
-                            "fieldType": "TYPE_UINT32",
-                            "label": "LABEL_OPTIONAL",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 1
-                        },
-                        {
-                            "name": "host",
-                            "fullName": "plm.registry.v1.Server.host",
-                            "fieldType": "TYPE_STRING",
-                            "label": "LABEL_OPTIONAL",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 2
-                        },
-                        {
-                            "name": "log_level",
-                            "fullName": "plm.registry.v1.Server.log_level",
-                            "fieldType": "TYPE_ENUM",
-                            "label": "LABEL_OPTIONAL",
-                            "enumType": "plm.registry.v1.Server.LogLevel",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 3
-                        }
-                    ],
-                    "type": "descriptor",
-                    "kind": "message",
-                    "tag": "server",
-                    "inlines": [
-                        {
-                            "@type": "type.googleapis.com/sylk.SylkEnum.v2.SylkEnum",
-                            "name": "LogLevel",
-                            "fullName": "plm.registry.v1.Server.LogLevel",
-                            "values": [
-                                {
-                                    "name": "INFO",
-                                    "fullName": "plm.registry.v1.Server.LogLevel.INFO",
-                                    "type": "descriptor",
-                                    "kind": "enum_value"
-                                },
-                                {
-                                    "name": "DEBUG",
-                                    "fullName": "plm.registry.v1.Server.LogLevel.DEBUG",
-                                    "index": 1,
-                                    "number": 1,
-                                    "type": "descriptor",
-                                    "kind": "enum_value"
-                                },
-                                {
-                                    "name": "TRACE",
-                                    "fullName": "plm.registry.v1.Server.LogLevel.TRACE",
-                                    "index": 2,
-                                    "number": 2,
-                                    "type": "descriptor",
-                                    "kind": "enum_value"
-                                }
-                            ],
-                            "type": "descriptor",
-                            "kind": "enum",
-                            "tag": "server"
-                        }
-                    ]
-                },
-                {
-                    "name": "Data",
-                    "fullName": "plm.registry.v1.Data",
-                    "fields": [
-                        {
-                            "name": "host",
-                            "fullName": "plm.registry.v1.Data.host",
-                            "fieldType": "TYPE_STRING",
-                            "label": "LABEL_OPTIONAL",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 1
-                        },
-                        {
-                            "name": "username",
-                            "fullName": "plm.registry.v1.Data.username",
-                            "fieldType": "TYPE_STRING",
-                            "label": "LABEL_OPTIONAL",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 2
-                        },
-                        {
-                            "name": "password",
-                            "fullName": "plm.registry.v1.Data.password",
-                            "fieldType": "TYPE_STRING",
-                            "label": "LABEL_OPTIONAL",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 3
-                        }
-                    ],
-                    "type": "descriptor",
-                    "kind": "message",
-                    "tag": "data"
-                },
-                {
-                    "name": "Config",
-                    "fullName": "plm.registry.v1.Config",
-                    "fields": [
-                        {
-                            "name": "storage",
-                            "fullName": "plm.registry.v1.Config.storage",
-                            "fieldType": "TYPE_MESSAGE",
-                            "label": "LABEL_OPTIONAL",
-                            "messageType": "plm.registry.v1.Storage",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 1
-                        },
-                        {
-                            "name": "server",
-                            "fullName": "plm.registry.v1.Config.server",
-                            "fieldType": "TYPE_MESSAGE",
-                            "label": "LABEL_OPTIONAL",
-                            "messageType": "plm.registry.v1.Server",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 2
-                        },
-                        {
-                            "name": "data",
-                            "fullName": "plm.registry.v1.Config.data",
-                            "fieldType": "TYPE_MESSAGE",
-                            "label": "LABEL_OPTIONAL",
-                            "messageType": "plm.registry.v1.Data",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 3
-                        }
-                    ],
-                    "type": "descriptor",
-                    "kind": "message",
-                    "tag": "config"
-                },
-                {
-                    "name": "PartialDownloadRequest",
-                    "fullName": "plm.registry.v1.PartialDownloadRequest",
-                    "fields": [
-                        {
-                            "name": "name",
-                            "fullName": "plm.registry.v1.PartialDownloadRequest.name",
-                            "description": "The library full name e.g: 'some_package' / '@org/some_package'",
-                            "fieldType": "TYPE_STRING",
-                            "label": "LABEL_OPTIONAL",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 1
-                        },
-                        {
-                            "name": "packages",
-                            "fullName": "plm.registry.v1.PartialDownloadRequest.packages",
-                            "description": "A list of full 'library/package' names",
-                            "fieldType": "TYPE_STRING",
-                            "label": "LABEL_REPEATED",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 2
-                        }
-                    ],
-                    "type": "descriptor",
-                    "kind": "message"
-                },
-                {
-                    "name": "DownloadRequest",
-                    "fullName": "plm.registry.v1.DownloadRequest",
-                    "fields": [
-                        {
-                            "name": "compression",
-                            "fullName": "plm.registry.v1.DownloadRequest.compression",
-                            "fieldType": "TYPE_ENUM",
-                            "label": "LABEL_OPTIONAL",
-                            "enumType": "plm.registry.v1.Compressions",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 3
-                        },
-                        {
-                            "name": "full_or_partial",
-                            "fullName": "plm.registry.v1.DownloadRequest.full_or_partial",
-                            "fieldType": "TYPE_ONEOF",
-                            "label": "LABEL_OPTIONAL",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 2,
-                            "oneofFields": [
-                                {
-                                    "name": "full",
-                                    "fullName": "plm.registry.v1.DownloadRequest.full_or_partial.full",
-                                    "fieldType": "TYPE_STRING",
-                                    "label": "LABEL_OPTIONAL",
-                                    "index": 1,
-                                    "kind": "oneof"
-                                },
-                                {
-                                    "name": "partial",
-                                    "fullName": "plm.registry.v1.DownloadRequest.full_or_partial.partial",
-                                    "fieldType": "TYPE_MESSAGE",
-                                    "label": "LABEL_OPTIONAL",
-                                    "messageType": "plm.registry.v1.PartialDownloadRequest",
-                                    "index": 2,
-                                    "kind": "oneof"
-                                }
-                            ]
-                        }
-                    ],
-                    "type": "descriptor",
-                    "kind": "message"
-                },
-                {
-                    "name": "DownloadResponse",
-                    "fullName": "plm.registry.v1.DownloadResponse",
-                    "fields": [
-                        {
-                            "name": "protobuf_or_gz",
-                            "fullName": "plm.registry.v1.DownloadResponse.protobuf_or_gz",
-                            "fieldType": "TYPE_ONEOF",
-                            "label": "LABEL_OPTIONAL",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 2,
-                            "oneofFields": [
-                                {
-                                    "name": "protobuf",
-                                    "fullName": "plm.registry.v1.DownloadResponse.protobuf_or_gz.protobuf",
-                                    "fieldType": "TYPE_MESSAGE",
-                                    "label": "LABEL_OPTIONAL",
-                                    "messageType": "plm.library.v1.Library",
-                                    "index": 1,
-                                    "kind": "oneof"
-                                },
-                                {
-                                    "name": "gz",
-                                    "fullName": "plm.registry.v1.DownloadResponse.protobuf_or_gz.gz",
-                                    "fieldType": "TYPE_BYTES",
-                                    "label": "LABEL_OPTIONAL",
-                                    "index": 2,
-                                    "kind": "oneof"
-                                }
-                            ]
-                        }
-                    ],
-                    "type": "descriptor",
-                    "kind": "message"
-                },
-                {
-                    "name": "PublishRequest",
-                    "fullName": "plm.registry.v1.PublishRequest",
-                    "fields": [
-                        {
-                            "name": "lib",
-                            "fullName": "plm.registry.v1.PublishRequest.lib",
-                            "fieldType": "TYPE_MESSAGE",
-                            "label": "LABEL_OPTIONAL",
-                            "messageType": "plm.library.v1.Library",
-                            "type": "descriptor",
-                            "kind": "field",
-                            "index": 1
-                        }
-                    ],
-                    "type": "descriptor",
-                    "kind": "message"
-                }
-            ],
-            "enums": [
-                {
-                    "name": "Compressions",
-                    "fullName": "plm.registry.v1.Compressions",
-                    "values": [
-                        {
-                            "name": "PROTOBUF",
-                            "fullName": "plm.registry.v1.Compressions.PROTOBUF",
-                            "type": "descriptor",
-                            "kind": "enum_value"
-                        },
-                        {
-                            "name": "GZ",
-                            "fullName": "plm.registry.v1.Compressions.GZ",
-                            "index": 1,
-                            "number": 1,
-                            "type": "descriptor",
-                            "kind": "enum_value"
-                        }
-                    ],
-                    "type": "descriptor",
-                    "kind": "enum"
-                }
-            ],
-            "type": "package",
-            "dependencies": [
-                "plm.library.v1",
-                "google.protobuf"
-            ],
-            "extensions": {
-                "files": {
-                    "registry": {},
-                    "server": {}
-                }
-            },
-            "services": [
-                {
-                    "name": "RegistryService",
-                    "fullName": "plm.registry.v1.RegistryService",
-                    "methods": [
-                        {
-                            "name": "Download",
-                            "inputType": "plm.registry.v1.DownloadRequest",
-                            "outputType": "plm.registry.v1.DownloadResponse",
-                            "type": "descriptor",
-                            "kind": "method"
-                        },
-                        {
-                            "name": "Publish",
-                            "fullName": "plm.registry.v1.RegistryService.Publish",
-                            "inputType": "plm.registry.v1.PublishRequest",
-                            "outputType": "google.protobuf.Empty",
-                            "type": "descriptor",
-                            "kind": "method"
-                        }
-                    ],
-                    "tag": "registry"
-                }
             ]
         },
         "plm/user/v1": {

@@ -95,7 +95,7 @@ pub struct LatestVersion {
 }
 
 // In your models.rs or a similar file
-#[derive(Queryable, Debug)]
+#[derive(Queryable, Debug, Selectable)]
 #[diesel(table_name = crate::data::schema::versions)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Version {

@@ -132,8 +132,8 @@ pub async fn install_command(
                 installed_lib.name, installed_lib.version
             ));
         }
-        Prompter::info(&format!("{tree}"));
-        
+        Prompter::info(&tree);
+
         let path = FileSystem::join_paths(manifest_path.clone(), "proto-package.json");
 
         FileSystem::write_json(path.to_str().unwrap(), &manifest)

@@ -1,10 +1,9 @@
 // Copyright 2023 Sylk Technologies
-//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,6 +21,7 @@ import "plm/library/v1/library.proto";
 import "google/protobuf/empty.proto";
 
 service RegistryService {
+	rpc Metadata (plm.registry.v1.MetadataRequest) returns (plm.registry.v1.MetadataResponse);
 	rpc Download (plm.registry.v1.DownloadRequest) returns (plm.registry.v1.DownloadResponse);
 	rpc Publish (plm.registry.v1.PublishRequest) returns (google.protobuf.Empty);
 }
@@ -54,6 +54,25 @@ message DownloadResponse {
 message PublishRequest {
 
 	plm.library.v1.Library lib = 1;
+}
+
+message MetadataRequest {
+
+	string library = 1;
+}
+
+message Version {
+
+	string name = 1;
+	string version = 2;
+	map<string, string> dependencies = 3;
+}
+
+message MetadataResponse {
+
+	string name = 1;
+	string description = 2;
+	map<string, plm.registry.v1.Version> versions = 3;
 }
 
 

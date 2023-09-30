@@ -188,7 +188,11 @@ impl LibraryStore {
     }
 
     /// Packages a release from the local file system state
-    pub async fn release(current_dir: &Path, mut manifest: Manifest, preserve_imports: bool) -> Result<Library> {
+    pub async fn release(
+        current_dir: &Path,
+        mut manifest: Manifest,
+        preserve_imports: bool,
+    ) -> Result<Library> {
         for dependency in manifest.dependencies.iter() {
             let _resolved = Self::resolve(&Dependency {
                 library_id: dependency.0.to_string(),
@@ -237,7 +241,7 @@ impl LibraryStore {
         if proto_path.is_empty() {
             proto_path = "."
         }
-        
+
         if proto_path != "." && !FileSystem::dir_exists(proto_path) {
             Err(anyhow!(
                 "must have a valid 'src_dir' value pointing to a root .proto files directory"
@@ -250,10 +254,11 @@ impl LibraryStore {
                 true => {
                     // let mut include_list : Vec<String> = vec![];
                     for (_, dep) in manifest.clone().dependencies.into_iter().enumerate() {
-                        let dep_path = FileSystem::join_paths(Self::PROTO_MODULES_PATH, dep.0.clone());
+                        let dep_path =
+                            FileSystem::join_paths(Self::PROTO_MODULES_PATH, dep.0.clone());
                         include_paths.push(dep_path.to_str().unwrap().to_string());
                     }
-                },
+                }
                 false => {
                     include_paths.push(Self::PROTO_MODULES_PATH.to_string());
                 }
