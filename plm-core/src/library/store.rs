@@ -167,7 +167,6 @@ impl LibraryStore {
         }
 
         info!("{tree}");
-        
         Ok(binding)
     }
 
@@ -189,7 +188,7 @@ impl LibraryStore {
     }
 
     /// Packages a release from the local file system state
-    pub async fn release(current_dir: &Path, manifest: Manifest) -> Result<Library> {
+    pub async fn release(current_dir: &Path, mut manifest: Manifest, preserve_imports: bool) -> Result<Library> {
         for dependency in manifest.dependencies.iter() {
             let _resolved = Self::resolve(&Dependency {
                 library_id: dependency.0.to_string(),
@@ -216,8 +215,10 @@ impl LibraryStore {
         //     .append_data(&mut header, MANIFEST_FILE, Cursor::new(manifest))
         //     .wrap_err("Failed to add manifest to release")?;
         // let protos_dir = FileSystem::join_paths(current_dir, manifest.src_dir);
-        let paths = Self::collect(&lib_path, current_dir, &manifest.exclude)?;
-        // println!("{:?}", protos_dir);
+        let mut excludes = vec![Self::PROTO_MODULES_PATH.to_string()];
+        excludes.append(&mut manifest.exclude);
+        let paths = Self::collect(&lib_path, current_dir, &excludes)?;
+
         // Get the vendored protoc bin path
         let protoc = crate::protoc::protoc_bin_path()
             .with_context(|| "Failed to find protoc bin path".to_string())?;
@@ -236,22 +237,36 @@ impl LibraryStore {
         if proto_path.is_empty() {
             proto_path = "."
         }
-        // info!("{:?} -> {}", rel_proto_path, rel_proto_path.to_str().unwrap() != lib_path.to_str().unwrap() );
+        
         if proto_path != "." && !FileSystem::dir_exists(proto_path) {
-            // Prompter::error();
             Err(anyhow!(
                 "must have a valid 'src_dir' value pointing to a root .proto files directory"
             ))
         } else {
+            let mut include_paths: Vec<String> = vec![];
+            include_paths.push(include_path.to_str().unwrap().to_string());
             // Compile the proto files using `tonic_build`
+            match preserve_imports {
+                true => {
+                    // let mut include_list : Vec<String> = vec![];
+                    for (_, dep) in manifest.clone().dependencies.into_iter().enumerate() {
+                        let dep_path = FileSystem::join_paths(Self::PROTO_MODULES_PATH, dep.0.clone());
+                        include_paths.push(dep_path.to_str().unwrap().to_string());
+                    }
+                },
+                false => {
+                    include_paths.push(Self::PROTO_MODULES_PATH.to_string());
+                }
+            };
+            println!("{:?}\n{:?}", include_paths, paths);
             tonic_build::configure()
                 .file_descriptor_set_path(FileSystem::join_paths(dot_plm_builds, "build.pb"))
                 .out_dir(&dot_plm_path)
                 .protoc_arg(format!("-I{}", proto_path))
-                .build_client(false)
-                .build_server(false)
-                .build_transport(false)
-                .compile(&paths, &[include_path])
+                // .build_client(false)
+                // .build_server(false)
+                // .build_transport(false)
+                .compile(&paths, &include_paths)
                 .with_context(|| "failed to run protoc successfully")?;
 
             let build_fd = FileSystem::join_paths(current_dir, ".plm/builds/build.pb");
@@ -287,7 +302,7 @@ impl LibraryStore {
                 fd_set: fd_set_to_bytes(&fd),
                 metadata: lib_md,
                 packages: pkgs.collect(),
-                dependencies: manifest.dependencies
+                dependencies: manifest.dependencies,
             };
 
             Ok(lib)
@@ -313,7 +328,6 @@ impl LibraryStore {
                 // Convert to relative path
                 let rel_path = FileSystem::to_relative_path(Path::new(path), lib_path)
                     .unwrap_or_else(|_| path.into());
-
                 // Check if the path should be excluded
                 !exclude.iter().any(|ex| rel_path.starts_with(ex))
             })

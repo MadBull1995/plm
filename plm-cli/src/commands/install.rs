@@ -61,14 +61,6 @@ pub async fn install_command(
             &mut client,
         )
         .await?;
-        // let download_req = DownloadRequest {
-        //     full_or_partial: Some(plm_core::FullOrPartial::Full(lib_name.clone())),
-        //     ..Default::default()
-        // };
-
-        // let downloaded_lib = client.download(download_req).await?;
-
-        // println!("{:?}", downloaded_lib);
         // TODO: Download Dependencies
         Prompter::task(5, 6, "fetching dependencies");
 
@@ -93,10 +85,59 @@ pub async fn install_command(
         FileSystem::write_json(path.to_str().unwrap(), &manifest)
             .map_err(|e| anyhow::anyhow!(e))?;
     } else {
-        // TODO: Handle all install
-        return Err(anyhow::anyhow!(
-            "Not supporting project global installs yet",
-        ));
+        #[allow(unreachable_code)]
+        let mut tree = ":: installing dependencies".to_string();
+
+        let mut registry_client_builder = CliRegistryClientBuilder::new();
+        registry_client_builder
+            .with_addr(registry_url)
+            .with_token(token);
+        let mut client = registry_client_builder.build().await?;
+        let dependency_count = manifest.dependencies.keys().len();
+        for (i, dep) in manifest.clone().dependencies.into_iter().enumerate() {
+            let lib = LibraryStore::install(
+                Dependency {
+                    library_id: dep.0.clone(),
+                    version: "".to_string(),
+                },
+                &mut client,
+            )
+            .await?;
+            let resolved_deps = proto_lock.resolve_dependencies(lib.name.clone())?;
+
+            // Add library to the proto-lock file
+            let installed_lib = Library {
+                name: lib.name,
+                version: lib.version,
+                dependencies: resolved_deps,
+            };
+
+            Prompter::task(6, 6, "updating proto-lock.json file");
+            proto_lock.add_library(installed_lib.clone());
+            proto_lock.validate()?;
+            proto_lock.to_file(proto_lock_path)?;
+
+            manifest
+                .dependencies
+                .insert(installed_lib.clone().name, installed_lib.version.clone());
+
+            let tree_char = if i + 1 == dependency_count {
+                '┗'
+            } else {
+                '┣'
+            };
+
+            tree.push_str(&format!(
+                "\n   {tree_char} installed {}@{}",
+                installed_lib.name, installed_lib.version
+            ));
+        }
+        Prompter::info(&format!("{tree}"));
+        
+        let path = FileSystem::join_paths(manifest_path.clone(), "proto-package.json");
+
+        FileSystem::write_json(path.to_str().unwrap(), &manifest)
+            .map_err(|e| anyhow::anyhow!(e))?;
     }
 
     Ok(())

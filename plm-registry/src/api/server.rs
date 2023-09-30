@@ -16,8 +16,9 @@ use std::{env, net::SocketAddr, sync::Arc};
 
 // use tower::{ServiceBuilder, layer::{util::Stack, LayerFn}};
 use plm_core::{registry_service_server, user_service_server};
-use tonic::transport::Server as GrpcServer;
+use tonic::{transport::Server as GrpcServer, service::{interceptor::InterceptedService, Interceptor}};
 use tracing::{debug, warn};
+
 
 use crate::{
     psql::QueryLayer,
@@ -84,12 +85,21 @@ impl RegistryServer {
 
     async fn setup_and_run(&self, mut server_builder: GrpcServer) {
         debug!("setting up services");
+        // let inner_svc = registry_service_server::RegistryServiceServer::new(self.registry.clone())
+        //     .max_decoding_message_size(100 * 1024 * 1024)
+        //     .max_encoding_message_size(100 * 1024 * 1024);
+        // registry_service_server::RegistryServiceServer::with_interceptor(inner, interceptor)
+        let svc = registry_service_server::RegistryServiceServer::new(self.registry.clone())
+            .max_decoding_message_size(100 * 1024 * 1024)
+            .max_encoding_message_size(100 * 1024 * 1024);
+        
+        // registry_service_server::RegistryServiceServer::with_interceptor(
+        //     svc.into(),
+        //     auth_guard,
+        // );
         let server = server_builder
             .add_service(
-                registry_service_server::RegistryServiceServer::with_interceptor(
-                    self.registry.clone(),
-                    auth_guard,
-                ),
+                svc,
             )
             .add_service(user_service_server::UserServiceServer::new(
                 self.user.clone(),

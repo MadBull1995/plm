@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::{sync::Arc, collections::HashMap};
+use std::sync::Arc;
 
 use diesel::result::{DatabaseErrorKind, Error};
 use plm_core::{
@@ -22,7 +22,12 @@ use plm_core::{
 use tonic::{async_trait, Request, Response, Status};
 use tracing::{debug, error, info, warn};
 
-use crate::{api::server::SECRET, models::NewVersion, psql::QueryLayer, RegistryStorage};
+use crate::{
+    api::server::SECRET,
+    models::{NewDependency, NewVersion},
+    psql::QueryLayer,
+    RegistryStorage,
+};
 
 #[derive(Clone)]
 pub struct RegistryService {
@@ -62,7 +67,7 @@ impl registry_service_server::RegistryService for RegistryService {
                             Some(latest) => {
                                 let release = self
                                     .data
-                                    .get_release(&full, Some(latest.max_version_id), None)
+                                    .get_async_release(&full, Some(latest.max_version_id), None)
                                     .await
                                     .map_err(|e| {
                                         tonic::Status::internal(format!(
@@ -130,7 +135,7 @@ impl registry_service_server::RegistryService for RegistryService {
 
         let release = self
             .data
-            .get_release(&pub_req.name, None, None)
+            .get_async_release(&pub_req.name, None, None)
             .await
             .map_err(|e| tonic::Status::internal(format!("error on fetching library: {:?}", e)))?;
         info!("{:?}", release);
@@ -160,6 +165,27 @@ impl registry_service_server::RegistryService for RegistryService {
                 error!("{:?}", e);
                 diesel::result::Error::RollbackTransaction
             })?;
+            for (dep, lib) in pub_req.dependencies.into_iter().enumerate() {
+                let dep_lib = self.data.get_release(&lib.0, None, None, c).map_err(|e| {
+                    error!("Dependency {} for {}, not found: {}", dep, pub_req.name, e);
+                    diesel::result::Error::RollbackTransaction
+                })?;
+
+                let new_dep = NewDependency {
+                    version_id: version.id,
+                    dependent_version_id: dep_lib.unwrap().1.pop().unwrap().id,
+                    dependency_range: &pub_req.version,
+                };
+                let deps = self.data.create_dependency(&new_dep, c).map_err(|e| {
+                    error!("{:?}", e);
+                    diesel::result::Error::RollbackTransaction
+                })?;
+
+                debug!(
+                    "created new dep [{}]: {} for {}",
+                    &lib.0, deps.id, deps.version_id
+                );
+            }
 
             println!("{:?}", version);
 

@@ -1,13 +1,27 @@
 #!/bin/bash
+# @open-telemetry/opentelemetry-proto
+# ./scripts/clone_and_publish.sh open-telemetry/opentelemetry-proto:./:main
 
-# @bufbuild/protoc-gen-validate
-./clone_and_publish bufbuild/protoc-gen-validate:./:main
-
-# @envoyproxy/envoy
-./clone_and_publish envoyproxy/envoy:api/:main
+# @grafeas/grafeas
+# ./scripts/clone_and_publish.sh grafeas/grafeas:./:master
 
 # @googleapis/googleapis
-./clone_and_publish googleapis/googleapis:./:master
+./scripts/clone_and_publish.sh googleapis/googleapis:./:master
 
-# @grpc/grpc
-./clone_and_publish exclude=src/proto/math,src/proto/grpc/testing,src/proto/grpc/gcp grpc/grpc:src/proto/:master
+# @bufbuild/protoc-gen-validate
+# ./scripts/clone_and_publish.sh bufbuild/protoc-gen-validate:./:main
+
+# @cncf/udpa
+# ./scripts/clone_and_publish.sh cncf/udpa:udpa/:main
+
+# @cncf/xds
+# ./scripts/clone_and_publish.sh cncf/xds:./:main
+
+# @envoyproxy/envoy
+# ./scripts/clone_and_publish.sh exclude=api/contrib envoyproxy/envoy:api/:main
+
+# @googleapis/googleapis
+# ./clone_and_publish googleapis/googleapis:./:master
+
+# # @grpc/grpc
+# ./clone_and_publish exclude=src/proto/math,src/proto/grpc/testing,src/proto/grpc/gcp grpc/grpc:src/proto/:master

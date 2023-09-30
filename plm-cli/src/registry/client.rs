@@ -101,7 +101,9 @@ impl CliRegistryClientBuilder {
         let reg = registry_service_client::RegistryServiceClient::with_interceptor(
             channel.clone(),
             AuthInterceptor { token },
-        );
+        )
+        .max_decoding_message_size(100 * 1024 * 1024)  // 100 MB
+        .max_encoding_message_size(100 * 1024 * 1024);    // 100 MB;
 
         // let reg = registry_service_client::RegistryServiceClient::new(channel.clone());
 

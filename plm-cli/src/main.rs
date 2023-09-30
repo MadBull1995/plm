@@ -161,13 +161,14 @@ async fn process_commands(args: Cli, cfgs: &mut CliConfigs) -> anyhow::Result<()
         Commands::Uninstall(_uninstall) => todo!(),
 
         // <-------- Publish ---------->
-        Commands::Publish(_publish) => {
+        Commands::Publish(publish) => {
             let manifest = get_manifest_from_file()?;
 
             commands::publish::publish_command(
                 manifest,
                 cfgs.clone(),
                 cfgs.clone().token.unwrap_or_default(),
+                publish.preserve_imports,
             )
             .await
             .with_context(|| "publish command errored".to_string())?;

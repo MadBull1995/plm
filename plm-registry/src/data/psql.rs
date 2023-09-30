@@ -199,7 +199,46 @@ impl QueryLayer {
         }
     }
 
-    pub async fn get_release(
+    pub fn get_release(
+        &self,
+        lib_name: &str,
+        _lib_version: Option<i32>,
+        _lib_scope: Option<String>,
+        mut conn: &mut PgConnection,
+    ) -> QueryResult<Option<(Library, Vec<Version>)>> {
+        use crate::schema::{libraries::dsl::*, versions};
+        debug!("{:?}", lib_name);
+        // Start with a base query for libraries
+        let query = libraries.filter(name.eq(lib_name)).into_boxed(); // Boxed queries allow dynamic composition
+
+        // // Conditionally apply optional filters
+        // if let Some(v) = lib_version {
+        //     query = query.filter(libraries::version.eq(v));
+        // }
+
+        // Execute the query for libraries
+        if let Some(library) = query
+            .select(Library::as_select())
+            .first::<Library>(conn.deref_mut())
+            .optional()?
+        {
+            println!("{:?}", library);
+            // Now query for versions and dependencies based on the found library
+            let related_versions = versions::table
+                .filter(versions::library_id.eq(library.lib_id))
+                .load::<Version>(conn.deref_mut())?;
+            println!("{:?}", related_versions);
+            // let related_dependencies = Dependency::belonging_to(&related_versions)
+            //     .load::<Dependency>(c.deref_mut())?
+            //     .grouped_by(&related_versions);
+
+            Ok(Some((library, related_versions)))
+        } else {
+            Ok(None)
+        }
+    }
+
+    pub async fn get_async_release(
         &self,
         lib_name: &str,
         _lib_version: Option<i32>,
@@ -210,11 +249,6 @@ impl QueryLayer {
         debug!("{:?}", lib_name);
         // Start with a base query for libraries
         let query = libraries.filter(name.eq(lib_name)).into_boxed(); // Boxed queries allow dynamic composition
-
-        // // Conditionally apply optional filters
-        // if let Some(v) = lib_version {
-        //     query = query.filter(libraries::version.eq(v));
-        // }
 
         // Execute the query for libraries
         if let Some(library) = query

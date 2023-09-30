@@ -20,13 +20,13 @@ use crate::{
 };
 use plm_core::{library::store::LibraryStore, Manifest, PublishRequest};
 
-pub async fn publish_command(manifest: Manifest, configs: CliConfigs, token: String) -> Result<()> {
+pub async fn publish_command(manifest: Manifest, configs: CliConfigs, token: String, preserve_imports: bool) -> Result<()> {
     let current_dir = &configs.current_dir;
 
     Prompter::info(format!("publishing: {:<15}", manifest.name).as_str());
     Prompter::task(1, 4, "Collecting '.proto' files");
 
-    let lib = LibraryStore::release(current_dir, manifest).await?;
+    let lib = LibraryStore::release(current_dir, manifest, preserve_imports).await?;
 
     let mut registry_client_builder = CliRegistryClientBuilder::new();
     registry_client_builder

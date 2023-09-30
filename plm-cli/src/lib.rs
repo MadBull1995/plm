@@ -206,6 +206,10 @@ pub struct Uninstall {
 pub struct Publish {
     /// The path to the package directory
     pub path: Option<String>,
+
+    /// This would preserve the original import paths to ensure that the original structure is emulated within proto_modules/
+    #[arg(long, action = clap::ArgAction::SetTrue)]
+    pub preserve_imports: bool,
 }
 
 pub fn parse_cli() -> Cli {

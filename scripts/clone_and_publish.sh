@@ -71,18 +71,24 @@ for arg in "$@"; do
 
     # Add the remote and configure sparse-checkout
     git remote add origin "https://github.com/$repo.git"
-    git config core.sparseCheckout true
-    echo "$src" >> .git/info/sparse-checkout
+    # git config core.sparseCheckout true
+    # echo "$src" >> .git/info/sparse-checkout
 
     # Apply excludes
-    for exclude in "${current_excludes[@]}"; do
-        echo "!$exclude" >> .git/info/sparse-checkout
-    done
+    # for exclude in "${current_excludes[@]}"; do
+    #     echo "!$exclude" >> .git/info/sparse-checkout
+    # done
     
     echo "[INFO] Fetching and checking out the repository."
 
     # Fetch data and checkout
-    git pull --depth=1 origin $branch
+    git pull origin $branch
+
+    # Check if it's a shallow clone and unshallow it if needed
+    if [ -f "$(git rev-parse --git-dir)/shallow" ]; then
+        echo "[INFO] Repository is shallow. Unshallowing..."
+        git fetch --unshallow
+    fi
 
     # Fetch tags from remote
     git fetch --tags
@@ -90,14 +96,11 @@ for arg in "$@"; do
     # Extract the repo name
     repo_name=$(basename "$repo")
 
-    # Fetch tags from remote
-    git fetch --tags
-
     # Get the latest tag
     latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
 
     # Checkout the latest tag
-    git checkout $latest_tag
+    # git checkout $latest_tag
     
     echo "[INFO] Preparing to publish the library."
     
@@ -106,7 +109,11 @@ for arg in "$@"; do
     # Strip off any suffix after "-" to conform to major.minor.patch
     formatted_version=$(echo "$latest_tag" | sed 's/-.*//')
     latest_tag=${formatted_version}  # Use the formatted version
-    
+    # Check if the variable is empty
+    if [ -z "$latest_tag" ]; then
+        latest_tag="0.0.1"
+    fi
+
     # Construct the exclude string if necessary
     exclude_str=""
     if [ ${#current_excludes[@]} -ne 0 ]; then
@@ -131,7 +138,7 @@ for arg in "$@"; do
             --version $latest_tag \
             --license apache2 \
             $deps_str \
-            $exclude_str && plm install && plm publish
+            $exclude_str && plm install && plm publish --preserve-imports
         cd - > /dev/null 2>&1
     else
         echo "[ERROR] Directory ${src} does not exist in the repo ${repo_name}:${formatted_version}."
