@@ -24,6 +24,7 @@ pub enum MessageType {
     Normal,
     Error,
     Verbose,
+    Success,
 }
 
 pub struct Prompter {
@@ -45,6 +46,7 @@ impl Prompter {
             MessageType::Info => info!("{}", format!("> [INFO]: {}", self.text).bold()),
             MessageType::Normal => info!("{}", self.text),
             MessageType::Verbose => debug!("{}", format!("> [DEBUG]: {}", self.text).dimmed()),
+            MessageType::Success => info!("{}", format!("> {}", self.text).green().dimmed()),
         }
     }
 
@@ -104,6 +106,16 @@ impl Prompter {
             total: 0,
             text: text.to_string(),
             message_type: MessageType::Error,
+        }
+        .display();
+    }
+
+    pub fn success(text: &str) {
+        Prompter {
+            step: 0,
+            total: 0,
+            text: text.to_string(),
+            message_type: MessageType::Success,
         }
         .display();
     }

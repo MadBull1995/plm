@@ -205,20 +205,6 @@ impl LibraryStore {
         let lib_path = fs::canonicalize(&manifest.src_dir)
             .await
             .with_context(|| format!("failed to canonicalize the src_dir: {}", manifest.src_dir))?;
-        info!("{:?}", lib_path);
-        // let mut archive = tar::Builder::new(Vec::new());
-
-        // let manifest = toml::to_string_pretty(&RawManifest::from(manifest))
-        //     .wrap_err("Failed to encode release manifest")?
-        //     .into_bytes();
-
-        // let mut header = tar::Header::new_gnu();
-        // header.set_size(manifest.len().try_into().wrap_err("Failed to pack tar")?);
-        // header.set_mode(0o444);
-        // archive
-        //     .append_data(&mut header, MANIFEST_FILE, Cursor::new(manifest))
-        //     .wrap_err("Failed to add manifest to release")?;
-        // let protos_dir = FileSystem::join_paths(current_dir, manifest.src_dir);
         let mut excludes = vec![Self::PROTO_MODULES_PATH.to_string()];
         excludes.append(&mut manifest.exclude);
         let paths = Self::collect(&lib_path, current_dir, &excludes)?;
@@ -252,7 +238,6 @@ impl LibraryStore {
             // Compile the proto files using `tonic_build`
             match preserve_imports {
                 true => {
-                    // let mut include_list : Vec<String> = vec![];
                     for (_, dep) in manifest.clone().dependencies.into_iter().enumerate() {
                         let dep_path =
                             FileSystem::join_paths(Self::PROTO_MODULES_PATH, dep.0.clone());
@@ -263,14 +248,13 @@ impl LibraryStore {
                     include_paths.push(Self::PROTO_MODULES_PATH.to_string());
                 }
             };
-            println!("{:?}\n{:?}", include_paths, paths);
+            if paths.len() > 100 {
+                println!("* This might take a while considering the many files you have ;)")
+            }
             tonic_build::configure()
                 .file_descriptor_set_path(FileSystem::join_paths(dot_plm_builds, "build.pb"))
                 .out_dir(&dot_plm_path)
                 .protoc_arg(format!("-I{}", proto_path))
-                // .build_client(false)
-                // .build_server(false)
-                // .build_transport(false)
                 .compile(&paths, &include_paths)
                 .with_context(|| "failed to run protoc successfully")?;
 
@@ -288,10 +272,7 @@ impl LibraryStore {
                         metadata: HashMap::new(),
                         ..Default::default()
                     },
-                    Err(_e) => {
-                        // Prompter::error(&format!("error on reading proto file: {:?}", e));
-                        crate::Package::default()
-                    }
+                    Err(_e) => crate::Package::default(),
                 }
             };
 
@@ -300,7 +281,7 @@ impl LibraryStore {
             let mut lib_md = HashMap::new();
 
             lib_md.insert("checksum".to_string(), release_id.to_string());
-
+            lib_md.insert("description".to_string(), manifest.description);
             let lib = crate::Library {
                 name: manifest.name,
                 version: manifest.version,

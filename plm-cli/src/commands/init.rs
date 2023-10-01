@@ -88,7 +88,7 @@ pub async fn init_command(init: &Init) -> PlmResult<()> {
 
     let dot_plm_dir = create_directory(&lib_dir, ".plm")?;
     create_directory(&dot_plm_dir, "builds")?;
-    Prompter::verbose("creating /proto_modules");
+    Prompter::verbose("Creating /proto_modules");
     plm_core::library::store::LibraryStore::create()
         .await
         .map_err(|err| PlmError::InternalError(err.to_string()))?;

@@ -84,18 +84,16 @@ impl RegistryServer {
 
     async fn setup_and_run(&self, mut server_builder: GrpcServer) {
         debug!("setting up services");
-        // let inner_svc = registry_service_server::RegistryServiceServer::new(self.registry.clone())
-        //     .max_decoding_message_size(100 * 1024 * 1024)
-        //     .max_encoding_message_size(100 * 1024 * 1024);
-        // registry_service_server::RegistryServiceServer::with_interceptor(inner, interceptor)
+
         let svc = registry_service_server::RegistryServiceServer::new(self.registry.clone())
             .max_decoding_message_size(100 * 1024 * 1024)
             .max_encoding_message_size(100 * 1024 * 1024);
 
-        // registry_service_server::RegistryServiceServer::with_interceptor(
-        //     svc.into(),
+        // let intercepted_service = registry_service_server::RegistryServiceServer::with_interceptor(
+        //     self.registry.clone(),
         //     auth_guard,
         // );
+
         let server = server_builder
             .add_service(svc)
             .add_service(user_service_server::UserServiceServer::new(

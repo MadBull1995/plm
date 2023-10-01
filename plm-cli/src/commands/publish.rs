@@ -27,20 +27,27 @@ pub async fn publish_command(
     preserve_imports: bool,
 ) -> Result<()> {
     let current_dir = &configs.current_dir;
-
-    Prompter::info(format!("publishing: {:<15}", manifest.name).as_str());
-    Prompter::task(1, 4, "Collecting '.proto' files");
-
+    Prompter::info(format!("Publishing: {:<15}", manifest.name).as_str());
+    if preserve_imports {
+        Prompter::warning(
+            "Passed --preserve-imports flag, will resolve import files without plm prefixing",
+        )
+    }
+    Prompter::task(1, 3, "Collecting .proto files and compilling...");
     let lib = LibraryStore::release(current_dir, manifest, preserve_imports).await?;
 
     let mut registry_client_builder = CliRegistryClientBuilder::new();
     registry_client_builder
-        .with_addr(configs.registry)
+        .with_addr(configs.registry.clone())
         .with_token(token);
     let mut client = registry_client_builder.build().await?;
-    let publish = PublishRequest { lib: Some(lib) };
+    let publish = PublishRequest {
+        lib: Some(lib.clone()),
+    };
+    Prompter::task(2, 3, "Creating new release for library");
     client.publish(publish).await?;
-
-    Prompter::task(4, 4, "Upload");
+    Prompter::task(3, 3, "Uploading .proto files to registry");
+    client.upload(lib).await?;
+    Prompter::success(&format!("Library published: {}", configs.registry));
     Ok(())
 }

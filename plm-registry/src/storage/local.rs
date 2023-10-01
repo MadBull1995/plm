@@ -58,6 +58,62 @@ impl RegistryStorage for LocalStorage {
         Ok(files)
     }
 
+    fn write(&self, upload: &plm_core::plm::registry::v1::UploadRequest) -> RegistryResult<()> {
+        let lib_name_version: Vec<&str> = upload.library.split(':').collect();
+        let library_path = fs::FileSystem::join_paths(lib_name_version[0], lib_name_version[1]);
+        let local_storage_path =
+            fs::FileSystem::join_paths(self.storage.registry_path.as_str(), library_path.clone());
+        info!("saving local library: {:?}", local_storage_path);
+        fs::FileSystem::create_dir(local_storage_path.clone().to_str().unwrap()).map_err(|e| {
+            RegistryError::InvalidConfigSetup(format!(
+                "couldnt create directory for new library release {}",
+                e
+            ))
+        })?;
+        let file = &upload.file;
+        match file {
+            Some(f) => {
+                let file_path = fs::FileSystem::join_paths(
+                    local_storage_path.to_str().unwrap(),
+                    f.name.clone(),
+                );
+                match str::from_utf8(&f.content) {
+                    Ok(file_string_content) => {
+                        // Create directory if it doesn't exist
+                        let file_parent = file_path.parent().unwrap();
+                        if let Err(e) = _fs::create_dir_all(file_parent) {
+                            error!("Failed to create directory {:?}: {:?}", file_parent, e);
+                            return Err(RegistryError::InvalidFileContent(format!(
+                                "unable to create directory {:?}",
+                                file_parent
+                            )));
+                        }
+
+                        debug!("saving file to-> {:?}", file_path);
+                        fs::FileSystem::write_file(
+                            file_path.to_str().unwrap(),
+                            file_string_content,
+                        )
+                        .map_err(|e| {
+                            RegistryError::InvalidFileContent(format!(
+                                "unable to write {:?}/{}: {:?}",
+                                library_path, f.name, e
+                            ))
+                        })?;
+                    }
+                    Err(_) => error!("unable to write {:?}/{}", library_path, f.name),
+                }
+            }
+            None => {
+                return Err(RegistryError::InvalidFileContent(
+                    "File content is missing".to_string(),
+                ))
+            }
+        }
+
+        Ok(())
+    }
+
     fn save(&self, library: plm_core::Library) -> RegistryResult<()> {
         let library_path = fs::FileSystem::join_paths(library.name, library.version);
         let local_storage_path =

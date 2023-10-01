@@ -14,7 +14,12 @@
 
 use std::path::PathBuf;
 
+use futures::Stream;
+use indicatif::ProgressBar;
 use plm_core::FileSystem as fs;
+use std::pin::Pin;
+use std::task::{Context, Poll};
+use tonic::codegen::Pin as TonicPin;
 
 use super::{
     errors::{PlmError, PlmResult},
@@ -27,11 +32,41 @@ pub fn get_global_plmrc_path() -> PathBuf {
 
 pub fn get_manifest_from_file() -> PlmResult<plm_core::Manifest> {
     let manifest_path = fs::join_paths(fs::current_dir().unwrap(), "proto-package.json");
-    Prompter::verbose(format!("reading manifest from: {:?}", manifest_path).as_str());
+    Prompter::verbose(format!("Reading manifest from: {:?}", manifest_path).as_str());
     let mfst =
         fs::read_manifest(manifest_path.clone().as_path().to_str().unwrap()).map_err(|_err| {
             PlmError::InternalError("Failed to parse manifest from file".to_string())
         })?;
 
     Ok(mfst)
+}
+
+pub struct ProgressStream<S> {
+    pub(crate) inner: S,
+    pub(crate) pb: ProgressBar,
+}
+
+impl<S: Stream + Unpin> Stream for ProgressStream<S> {
+    type Item = S::Item;
+
+    fn poll_next(self: TonicPin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
+        let this = self.get_mut(); // Get a mutable reference to `self`
+        let next = Pin::new(&mut this.inner).poll_next(cx); // Re-borrowing the Pin
+        if next.is_ready() {
+            this.pb.inc(1);
+        }
+        next
+    }
+}
+
+pub fn bytes_to_human_readable(mut bytes: usize) -> String {
+    let mut count = 0;
+    let units = ["B", "KB", "MB", "GB", "TB"];
+
+    while bytes >= 1024 && count < units.len() - 1 {
+        bytes /= 1024;
+        count += 1;
+    }
+
+    format!("{} {}", bytes, units[count])
 }

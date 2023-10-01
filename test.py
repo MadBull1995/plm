@@ -5,7 +5,7 @@ client = RegistryService_v1(None, {
 })
 
 md_request = registry_v1.MetadataRequest(
-    library="@cncf/udpa"
+    library="@googleapis/googleapis"
 )
 response = client.Metadata(md_request)
 print(response)

@@ -104,7 +104,7 @@ impl CliConfigs {
         match overrides {
             None => {}
             Some(plmrc) => {
-                Prompter::verbose("reading global configs: ~/.plmrc");
+                Prompter::verbose("Reading global configs: ~/.plmrc");
                 for k in plmrc.keys() {
                     if k == "username" {
                         self.username = Some(plmrc.get(k).unwrap().to_string());
@@ -130,7 +130,7 @@ impl CliConfigs {
             Err(_) => {}
             Ok(plmrc) => {
                 Prompter::verbose(
-                    "found local project .plmrc file, going to override global ~/.plmrc",
+                    "Found local project .plmrc file, going to override global ~/.plmrc",
                 );
                 for k in plmrc.keys() {
                     if k == "username" {

@@ -30,7 +30,8 @@ use crate::models::{
 
 type QueryResult<T> = Result<T, diesel::result::Error>;
 type DB = diesel::pg::Pg;
-const MIGRATIONS: diesel_migrations::EmbeddedMigrations = embed_migrations!();
+use diesel_migrations::EmbeddedMigrations;
+const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations");
 
 #[derive(Clone)]
 pub struct QueryLayer {
@@ -241,10 +242,13 @@ impl QueryLayer {
         release: &plm_core::Library,
         conn: &mut PgConnection,
     ) -> QueryResult<Library> {
+        let default_desc = "".to_string();
+        let desc = release.metadata.get("description").unwrap_or(&default_desc);
         let new_release = NewLibrary {
             name: &release.name,
             org_id: None,
             public: false,
+            description: Some(desc),
         };
         // let mut c = self.conn.lock().await;
         diesel::insert_into(crate::schema::libraries::table)

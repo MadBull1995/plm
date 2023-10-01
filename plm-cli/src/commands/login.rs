@@ -27,7 +27,7 @@ pub async fn login_command(
     token: &str,
     registry_url: String,
 ) -> anyhow::Result<()> {
-    Prompter::info("processing login to registry");
+    Prompter::info("Processing login to registry");
     let mut client_builder = CliRegistryClientBuilder::new();
     client_builder.with_addr(registry_url.clone());
     let mut client = client_builder.build().await?;

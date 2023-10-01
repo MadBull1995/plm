@@ -41,7 +41,7 @@ async fn main() -> PlmResult<()> {
     setup_tracing(&args.quiet, &args.debug);
     setup_prompter(args.debug, args.quiet);
 
-    Prompter::info("starting plm process");
+    Prompter::info("Starting plm process");
 
     let mut cfgs = CliConfigs::new();
     cfgs.load_plmrc_files()?;

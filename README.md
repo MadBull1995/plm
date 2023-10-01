@@ -1,6 +1,6 @@
 # PLM - Protobuf Library Manager
 
-[![CI](https://github.com/MadBull1995/plm/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/MadBull1995/plm/actions/workflows/ci.yml)
+[![CI](https://github.com/MadBull1995/plm/actions/workflows/ci.yml/badge.svg)](https://github.com/MadBull1995/plm/actions/workflows/ci.yml)
 [![Docker](https://img.shields.io/docker/pulls/sylkbuild/plm.svg)](https://hub.docker.com/r/sylkbuild/plm/)
 
 ---

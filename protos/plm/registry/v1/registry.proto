@@ -16,7 +16,7 @@ syntax = "proto3";
 package plm.registry.v1;
 
 
-
+import "plm/package/v1/package.proto";
 import "plm/library/v1/library.proto";
 import "google/protobuf/empty.proto";
 
@@ -24,6 +24,12 @@ service RegistryService {
 	rpc Metadata (plm.registry.v1.MetadataRequest) returns (plm.registry.v1.MetadataResponse);
 	rpc Download (plm.registry.v1.DownloadRequest) returns (plm.registry.v1.DownloadResponse);
 	rpc Publish (plm.registry.v1.PublishRequest) returns (google.protobuf.Empty);
+	rpc Upload (stream plm.registry.v1.UploadRequest) returns (google.protobuf.Empty);
+}
+
+message UploadRequest {
+	string library = 1;
+	plm.package.v1.File file = 2;
 }
 
 message PartialDownloadRequest {

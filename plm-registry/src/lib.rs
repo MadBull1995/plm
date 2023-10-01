@@ -21,6 +21,7 @@ pub mod storage {
     pub trait RegistryStorage: Send + Sync {
         fn save(&self, library: plm_core::Library) -> RegistryResult<()>;
         fn load(&self, library: &str) -> RegistryResult<Vec<File>>;
+        fn write(&self, upload: &UploadRequest) -> RegistryResult<()>;
     }
 
     mod builder;
@@ -28,7 +29,7 @@ pub mod storage {
     pub mod s3;
 
     pub use builder::StorageBuilder;
-    use plm_core::plm::package::v1::File;
+    use plm_core::plm::{package::v1::File, registry::v1::UploadRequest};
 
     use crate::types::RegistryResult;
 }

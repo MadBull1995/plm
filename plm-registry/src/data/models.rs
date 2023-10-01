@@ -72,6 +72,7 @@ pub struct Library {
     pub name: String,
     pub org_id: Option<i32>,
     pub public: bool,
+    pub description: Option<String>, // Using Option because it might be nullable
     pub created_at: Option<NaiveDateTime>,
     pub updated_at: Option<NaiveDateTime>,
 }
@@ -83,6 +84,7 @@ pub struct NewLibrary<'a> {
     pub name: &'a str,
     pub org_id: Option<&'a i32>,
     pub public: bool,
+    pub description: Option<&'a str>,
 }
 
 #[derive(Debug, QueryableByName)]

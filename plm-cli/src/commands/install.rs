@@ -35,15 +35,14 @@ pub async fn install_command(
     token: String,
 ) -> anyhow::Result<()> {
     if let Some(lib_name) = install.name {
-        Prompter::info(&lib_name);
         validate_lib_name(&lib_name)?;
 
-        Prompter::task(2, 6, &format!("installing library -> {}", lib_name));
+        Prompter::task(2, 6, &format!("Installing library -> {}", lib_name));
 
         // TODO: Fetch Library from Registry
-        Prompter::task(3, 6, "fetching library from registry");
+        Prompter::task(3, 6, "Fetching library from registry");
 
-        Prompter::task(4, 6, "resolving dependencies");
+        Prompter::task(4, 6, "Resolving dependencies");
         // Resolve library deps
         let resolved_deps = proto_lock.resolve_dependencies(lib_name.clone())?;
 
@@ -62,7 +61,7 @@ pub async fn install_command(
         )
         .await?;
         // TODO: Download Dependencies
-        Prompter::task(5, 6, "fetching dependencies");
+        Prompter::task(5, 6, "Fetching dependencies");
 
         // Add library to the proto-lock file
         let installed_lib = Library {
@@ -71,7 +70,7 @@ pub async fn install_command(
             dependencies: resolved_deps,
         };
 
-        Prompter::task(6, 6, "updating proto-lock.json file");
+        Prompter::task(6, 6, "Updating proto-lock.json file");
         proto_lock.add_library(installed_lib.clone());
         proto_lock.validate()?;
         proto_lock.to_file(proto_lock_path)?;
@@ -112,7 +111,7 @@ pub async fn install_command(
                 dependencies: resolved_deps,
             };
 
-            Prompter::task(6, 6, "updating proto-lock.json file");
+            Prompter::task(6, 6, "Updating proto-lock.json file");
             proto_lock.add_library(installed_lib.clone());
             proto_lock.validate()?;
             proto_lock.to_file(proto_lock_path)?;

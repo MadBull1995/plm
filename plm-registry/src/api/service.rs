@@ -12,16 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::{collections::HashMap, sync::Arc};
-
 use diesel::result::{DatabaseErrorKind, Error};
 use plm_core::{
-    plm::registry::v1::{MetadataRequest, MetadataResponse, Version},
+    plm::registry::v1::{MetadataRequest, MetadataResponse, UploadRequest, Version},
     registry_service_server, user_service_server,
     utils::auth,
     CreateUserRequest, DownloadRequest, DownloadResponse, FullOrPartial, Library, LoginRequest,
     LoginResponse, PublishRequest, User,
 };
+use std::{collections::HashMap, sync::Arc};
+use tokio_stream::StreamExt;
 use tonic::{async_trait, Request, Response, Status};
 use tracing::{debug, error, info, warn};
 
@@ -40,6 +40,32 @@ pub struct RegistryService {
 
 #[async_trait]
 impl registry_service_server::RegistryService for RegistryService {
+    async fn upload(
+        &self,
+        request: Request<tonic::Streaming<UploadRequest>>,
+    ) -> Result<Response<()>, Status> {
+        println!("Upload");
+
+        let mut stream = request.into_inner();
+
+        while let Some(upload) = stream.next().await {
+            let upload = upload?;
+            let bind = upload.clone();
+            debug!(
+                "  ==> Upload = {}/{}",
+                bind.library,
+                bind.file.unwrap().name
+            );
+
+            // TODO: Save files
+            self.storage
+                .write(&upload)
+                .map_err(|e| tonic::Status::internal(format!("Failed to write file: {:?}", e)))?;
+        }
+
+        Ok(Response::new(()))
+    }
+
     async fn metadata(
         &self,
         request: Request<MetadataRequest>,
@@ -111,7 +137,7 @@ impl registry_service_server::RegistryService for RegistryService {
 
         let md_res = MetadataResponse {
             name: lib.name,
-            description: "".to_string(),
+            description: lib.description.unwrap_or("".to_string()),
             versions: hashed_versions,
         };
 
@@ -221,6 +247,8 @@ impl registry_service_server::RegistryService for RegistryService {
             .map_err(|e| tonic::Status::internal(format!("error on fetching library: {:?}", e)))?;
         info!("{:?}", release);
         let mut conn = self.data.conn.lock().await;
+
+        // Starting Transaction for the whole publish phases, so any failure should roolback the release record
         let transaction = conn.build_transaction().run(|c| {
             #[allow(unused_assignments)]
             let mut library = None;
@@ -234,18 +262,21 @@ impl registry_service_server::RegistryService for RegistryService {
                 }
             }
 
-            self.storage.save(pub_req.clone()).map_err(|e| {
-                error!("{:?}", e);
-                diesel::result::Error::RollbackTransaction
-            })?;
+            // self.storage.save(pub_req.clone()).map_err(|e| {
+            //     error!("{:?}", e);
+            //     diesel::result::Error::RollbackTransaction
+            // })?;
+
             let new_version = NewVersion {
                 library_id: library.as_ref().unwrap().lib_id,
                 version_number: &pub_req.version,
             };
+
             let version = self.data.create_version(&new_version, c).map_err(|e| {
                 error!("{:?}", e);
                 diesel::result::Error::RollbackTransaction
             })?;
+
             for (dep, lib) in pub_req.dependencies.into_iter().enumerate() {
                 let dep_lib = self.data.get_release(&lib.0, None, None, c).map_err(|e| {
                     error!("Dependency {} for {}, not found: {}", dep, pub_req.name, e);
@@ -268,7 +299,7 @@ impl registry_service_server::RegistryService for RegistryService {
                 );
             }
 
-            println!("{:?}", version);
+            debug!("{:?}", version);
 
             // TODO: Add deps
 
@@ -294,7 +325,8 @@ impl registry_service_server::RegistryService for RegistryService {
                 e
             ))),
             Ok(r) => {
-                println!("{:?}", r);
+                let lib = r.unwrap();
+                info!("Uploaded {:?}", lib.name);
 
                 Ok(Response::new(()))
             }
