@@ -16,6 +16,32 @@ PLM is an open-source Protobuf Library Manager that allows developers to easily 
 - Install and manage dependencies with ease.
 - Secure user authentication.
 
+## Roadmap
+```
+[~] Storage -
+    [X] Local storage
+    [ ] Remote storage (s3)
+
+[~] Database - PostgreSQL
+    [X] Core logic
+    [ ] Organizations
+    [ ] Public / Private
+
+[~] Registry Server - gRPC
+    [X] Data layer
+    [X] JWT authentication
+    [~] Streaming files (Upload / Download)
+    [ ] User role based authentication
+
+[~] CLI -
+    [X] Initialize library
+    [X] Publish libraries
+    [X] Install libraries
+    [X] Configs (Global / Project)
+    [~] Login / Logout
+
+[ ] Registry UI -
+```
 ## Table of Contents
 
 1. [Getting Started](#getting-started)
@@ -96,3 +122,7 @@ We welcome contributions from the community. To get started, please fork the rep
 ## License
 
 This project is licensed under the APACHE-2.0 License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+Created with `</>` by `plm` authors, 2023.
