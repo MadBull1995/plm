@@ -1,0 +1,6 @@
+[book]
+authors = ["Amit Shmulevitch"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Protobuf Library Manager"
